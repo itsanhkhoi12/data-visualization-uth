@@ -1,6 +1,9 @@
 # Dataset goc va du lieu nhay cam
 /raw_data/
 /src/eda/artifacts/
+data/
+*.docx
+*.pptx
 
 # Python virtual environments
 .venv/
