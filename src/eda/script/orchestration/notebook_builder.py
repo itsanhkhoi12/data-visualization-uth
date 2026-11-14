@@ -33,7 +33,7 @@ PRELUDE_CODE = (
 )
 
 FIGURE_HELPER_CODE = (
-    "def _show_figure(chart_id, split='train', limit=1):\n"
+    "def _show_figure(chart_id, split='public_test', limit=1):\n"
     "    html = run.figures_html(chart_id, split, limit)\n"
     "    if html:\n"
     "        display(HTML(html))\n"
@@ -97,7 +97,7 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "Tổng số tệp, số worksheet và số đối tượng CSDL là số đối tượng nguồn, "
         "không phải số giao dịch và không được cộng chéo.",
         tables=(("TBL01", None),),
-        charts=(("INV01", "train", 1), ("GLOBAL06", "train", 1)),
+        charts=(("INV01", "public_test", 1), ("GLOBAL06", "public_test", 1)),
     ),
     _section(
         "02",
@@ -108,9 +108,9 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "mỗi bản ghi gắn content hash của tệp gốc.",
         "Nhiều tệp hơn không đồng nghĩa nhiều giao dịch hơn; tệp trong manifest "
         "được đọc ở chế độ chỉ đọc và không bị thay đổi.",
-        tables=(("TBL02", "train"), ("TBL03", "train"), ("TBL04", "train")),
-        charts=(("INV01", "train", 1), ("INV02", "train", 1), ("INV03", "train", 1),
-                ("INV04", "train", 1)),
+        tables=(("TBL02", "public_test"), ("TBL03", "public_test"), ("TBL04", "public_test")),
+        charts=(("INV01", "public_test", 1), ("INV02", "public_test", 1), ("INV03", "public_test", 1),
+                ("INV04", "public_test", 1)),
     ),
     _section(
         "03",
@@ -121,8 +121,8 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "ứng viên và kiểm tra số khóa lệch.",
         "Quan hệ ứng viên chưa được phê duyệt không được dùng để tính chỉ số; "
         "phép nối có rủi ro nhân bản bị chặn theo thiết kế.",
-        tables=(("TBL05", "train"), ("TBL12", "train")),
-        charts=(("GLOBAL02", "train", 1), ("QUAL07", "train", 1)),
+        tables=(("TBL05", "public_test"), ("TBL12", "public_test")),
+        charts=(("GLOBAL02", "public_test", 1), ("QUAL07", "public_test", 1)),
     ),
     _section(
         "04",
@@ -133,11 +133,11 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "được hồ sơ; thiếu dữ liệu có cấu trúc tách riêng khỏi khoảng trống thực.",
         "Cờ thiếu dữ liệu và cờ trùng lặp là tín hiệu thống kê, chưa được xác định "
         "là bản ghi lỗi nếu chưa có đối chiếu rulebook.",
-        tables=(("TBL06", "train"), ("TBL07", "train"), ("TBL08", "train"),
-                ("TBL19", "train")),
-        charts=(("QUAL01", "train", 1), ("QUAL02", "train", 1), ("QUAL04", "train", 1),
-                ("QUAL05", "train", 1)),
-        story_split="train",
+        tables=(("TBL06", "public_test"), ("TBL07", "public_test"), ("TBL08", "public_test"),
+                ("TBL19", "public_test")),
+        charts=(("QUAL01", "public_test", 1), ("QUAL02", "public_test", 1), ("QUAL04", "public_test", 1),
+                ("QUAL05", "public_test", 1)),
+        story_split="public_test",
         story_limit=2,
     ),
     _section(
@@ -149,10 +149,10 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "ngưỡng ngoại lệ IQR chỉ gắn cờ, không tự động loại bỏ.",
         "Kiểu vật lý không bảo đảm ngữ nghĩa đo lường; cột định danh dạng số "
         "được xử lý riêng và không đưa vào phân tích phân phối đo lường.",
-        tables=(("TBL09", "train"),),
-        charts=(("NUM01", "train", 2), ("NUM02", "train", 1), ("NUM06", "train", 1),
-                ("NUM08", "train", 1)),
-        story_split="train",
+        tables=(("TBL09", "public_test"),),
+        charts=(("NUM01", "public_test", 2), ("NUM02", "public_test", 1), ("NUM06", "public_test", 1),
+                ("NUM08", "public_test", 1)),
+        story_split="public_test",
         story_limit=2,
     ),
     _section(
@@ -164,9 +164,9 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "và ghi rõ phạm vi quan sát của mỗi trường.",
         "Cao độ lớp phụ thuộc quy tắc chuẩn hóa giá trị; các giá trị tương tự nhau "
         "về nghĩa chỉ được báo cáo là ứng viên, không tự ý hợp nhất.",
-        tables=(("TBL10", "train"),),
-        charts=(("CAT01", "train", 2), ("CAT02", "train", 1), ("CAT03", "train", 1)),
-        story_split="train",
+        tables=(("TBL10", "public_test"),),
+        charts=(("CAT01", "public_test", 2), ("CAT02", "public_test", 1), ("CAT03", "public_test", 1)),
+        story_split="public_test",
         story_limit=2,
     ),
     _section(
@@ -178,11 +178,11 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "cùng một nguồn hoặc phép nối không nhân bản.",
         "Tương quan không phải quan hệ nhân quả; phép nối ứng viên chỉ được hiển thị "
         "để đánh giá rủi ro nhân bản, không dùng cho tính chỉ số.",
-        tables=(("TBL12", "train"),),
-        charts=(("REL01", "train", 1), ("REL03", "train", 1), ("REL06", "train", 1),
-                ("REL07", "train", 1), ("REL08", "train", 1), ("REL09", "train", 1),
-                ("REL10", "train", 1)),
-        story_split="train",
+        tables=(("TBL12", "public_test"),),
+        charts=(("REL01", "public_test", 1), ("REL03", "public_test", 1), ("REL06", "public_test", 1),
+                ("REL07", "public_test", 1), ("REL08", "public_test", 1), ("REL09", "public_test", 1),
+                ("REL10", "public_test", 1)),
+        story_split="public_test",
         story_limit=2,
     ),
     _section(
@@ -194,10 +194,10 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "lịch và báo cáo khoảng phủ theo doanh nghiệp.",
         "Mỗi trường ngày giữ vai trò sự kiện riêng nên các khoảng phủ không thể so "
         "sánh trực tiếp; thiếu dữ liệu theo kỳ không được coi là giá trị bằng không.",
-        tables=(("TBL11", "train"),),
-        charts=(("TIME01", "train", 1), ("TIME02", "train", 1), ("TIME03", "train", 1),
-                ("TIME07", "train", 1)),
-        story_split="train",
+        tables=(("TBL11", "public_test"),),
+        charts=(("TIME01", "public_test", 1), ("TIME02", "public_test", 1), ("TIME03", "public_test", 1),
+                ("TIME07", "public_test", 1)),
+        story_split="public_test",
         story_limit=2,
     ),
     _section(
@@ -209,51 +209,40 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "rulebook split và chỉ hiển thị khi doanh nghiệp đủ điều kiện.",
         "Doanh nghiệp thiếu điều kiện bị ghi trạng thái rõ ràng, không được thay bằng "
         "số liệu của doanh nghiệp khác để lấp chỗ trống.",
-        tables=(("TBL13", "train"), ("TBL14", "train")),
-        charts=(("BUS01", "train", 2), ("BUS03", "train", 1), ("BUS05", "train", 1),
-                ("QUAL03", "train", 1)),
-        story_split="train",
+        tables=(("TBL13", "public_test"), ("TBL14", "public_test")),
+        charts=(("BUS01", "public_test", 2), ("BUS03", "public_test", 1), ("BUS05", "public_test", 1),
+                ("QUAL03", "public_test", 1)),
+        story_split="public_test",
         story_limit=2,
     ),
     _section(
         "10",
-        "Câu hỏi và đáp án tham chiếu Train",
-        "Khảo sát siêu dữ liệu câu hỏi Train và cấu trúc tổng hợp của đáp án tham "
-        "chiếu mà không trích xuất nội dung đáp án.",
-        "Đặc trưng câu hỏi suy ra bằng luật văn phong; đáp án chỉ được đọc ở dạng "
-        "siêu dữ liệu tổng hợp kiểu và hình dạng cấu trúc.",
-        "Nhãn ý định là quy tắc suy ra, không phải chú thích của con người; "
-        "không có bảng tra cứu đáp án theo mã câu hỏi.",
-        tables=(("TBL15", "train"),),
-        charts=(("QNA01", "train", 1), ("QNA02", "train", 1), ("QNA04", "train", 1),
-                ("QNA05", "train", 1)),
-        story_split="train",
+        "Hồ sơ câu hỏi người dùng Public Test",
+        "Khảo sát siêu dữ liệu câu hỏi trong tệp questions.jsonl của Public Test mà không truy cập đáp án.",
+        "Đặc trưng câu hỏi suy ra bằng luật văn phong và cấu trúc ngữ nghĩa câu hỏi.",
+        "Split Public Test không có đáp án tham chiếu theo quy định; nhãn ý định là quy tắc suy ra.",
+        tables=(("TBL15", "public_test"),),
+        charts=(("QNA01", "public_test", 1), ("QNA02", "public_test", 1)),
+        story_split="public_test",
         story_limit=1,
     ),
     _section(
         "11",
-        "Câu hỏi Public Test và đối chiếu đặc trưng",
-        "Trình bày siêu dữ liệu câu hỏi Public Test và so sánh đặc trưng câu hỏi "
-        "giữa hai split trên cùng cách chuẩn hóa.",
-        "Chỉ đọc tệp câu hỏi của Public Test; tỷ trọng đặc trưng được chuẩn hóa "
-        "theo số câu hỏi của từng split.",
-        "Split Public Test không có đáp án tham chiếu và không được truy cập, "
-        "suy diễn hay dựng nhãn; mọi so sánh chỉ dựa trên siêu dữ liệu câu hỏi.",
+        "Phân tích đặc trưng câu hỏi Public Test",
+        "Trình bày phân bổ đặc trưng, từ khóa thời gian và cấu trúc câu hỏi của Public Test.",
+        "Thống kê từ khóa thời gian, độ dài ký tự và tỷ lệ câu hỏi trên tập Public Test.",
+        "Tập trung hoàn toàn vào câu hỏi của 14 doanh nghiệp Public Test; không có so sánh chéo với train.",
         tables=(("TBL15", "public_test"),),
-        charts=(("QNA01", "public_test", 1), ("QNA02", "public_test", 1),
-                ("QNA07", None, 1)),
+        charts=(("QNA01", "public_test", 1), ("QNA03", "public_test", 1)),
         story_split="public_test",
         story_limit=1,
     ),
     _section(
         "12",
-        "Đối chiếu rulebook giữa hai split",
-        "Nêu chính xác các khác biệt ở cấp quy tắc giữa rulebook Train và "
-        "Public Test.",
-        "So khớp rulebook theo mức quy tắc và phân loại quy tắc chỉ có ở một "
-        "split hoặc đã bị sửa đổi.",
-        "Quy tắc riêng của từng split không được áp dụng chéo; khác biệt rulebook "
-        "là lý do không thể giả định chỉ số KPI giống nhau giữa hai split.",
+        "Quy tắc nghiệp vụ theo Rulebook Public Test",
+        "Tổng hợp các quy tắc định nghĩa chỉ số và chuẩn nghiệp vụ trong rulebook.md của Public Test.",
+        "Trích xuất quy tắc theo bảng và mục từ rulebook.md của Public Test.",
+        "Quy tắc của Public Test là chuẩn duy nhất áp dụng cho toàn bộ phân tích nghiệp vụ.",
         tables=(("TBL16", None),),
     ),
     _section(
@@ -265,10 +254,10 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "của từng nhóm biểu đồ theo doanh nghiệp.",
         "Cùng một vai trò ngữ nghĩa không đồng nghĩa với khóa nối tương đương; "
         "đủ điều kiện về schema không bảo đảm biểu đồ dựng được.",
-        tables=(("TBL17", "train"),),
-        charts=(("GLOBAL02", "train", 1), ("GLOBAL03", "train", 1),
-                ("GLOBAL04", "train", 1), ("GLOBAL05", None, 1)),
-        story_split="train",
+        tables=(("TBL17", "public_test"),),
+        charts=(("GLOBAL02", "public_test", 1), ("GLOBAL03", "public_test", 1),
+                ("GLOBAL04", "public_test", 1), ("GLOBAL05", None, 1)),
+        story_split="public_test",
         story_limit=1,
     ),
     _section(
@@ -281,7 +270,7 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "Số lượng đối tượng siêu dữ liệu không phải số giao dịch và không được "
         "cộng chéo giữa các loại đối tượng.",
         tables=(("TBL18", None),),
-        charts=(("GLOBAL01", "train", 1), ("GLOBAL06", "train", 1)),
+        charts=(("GLOBAL01", "public_test", 1), ("GLOBAL06", "public_test", 1)),
     ),
     _section(
         "15",
@@ -292,9 +281,9 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "phát hiện gắn mức độ, tỷ lệ và bằng chứng nguồn.",
         "Phân biệt phát hiện có bằng chứng với lỗi đã xác nhận; trạng thái BLOCKED "
         "là kết quả hợp lệ và không được nâng lên PASS để đạt hình thức.",
-        tables=(("TBL19", "train"), ("TBL20", None)),
-        charts=(("QUAL06", "train", 1), ("QUAL08", None, 1)),
-        story_split="train",
+        tables=(("TBL19", "public_test"), ("TBL20", None)),
+        charts=(("QUAL06", "public_test", 1), ("QUAL08", None, 1)),
+        story_split="public_test",
         story_limit=1,
     ),
     _section(
@@ -307,8 +296,8 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "Không có kết luận nào vượt quá phạm vi bằng chứng đã ghi; phần chưa đủ "
         "bằng chứng được nêu rõ thay vì bị lược bỏ.",
         tables=(),
-        charts=(("GLOBAL07", "train", 1),),
-        story_split="train",
+        charts=(("GLOBAL07", "public_test", 1),),
+        story_split="public_test",
         story_limit=6,
     ),
 )

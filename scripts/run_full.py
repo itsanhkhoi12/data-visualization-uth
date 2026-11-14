@@ -13,7 +13,7 @@ from orchestration.pipeline import run_eda
 
 started = time.time()
 config = load_config()
-run = run_eda(config, splits=("train", "public_test"))
+run = run_eda(config, splits=("public_test",))
 elapsed = time.time() - started
 figures = run.visualization.registry.figures if run.visualization else []
 payload = {

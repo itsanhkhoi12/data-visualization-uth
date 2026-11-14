@@ -18,7 +18,7 @@ from common.provenance import fingerprint_file
 
 config = load_config()
 bundles = {}
-for split in ("train", "public_test"):
+for split in config.splits:
     context = config.context_for(split)
     registry = compile_rule_registry(
         context.rulebook_path, split, fingerprint_file(context.rulebook_path)

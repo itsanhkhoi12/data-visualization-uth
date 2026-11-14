@@ -15,7 +15,7 @@ class EdaConfig:
     workspace_root: Path
     raw_root: Path
     output_root: Path
-    splits: tuple[str, ...] = (DatasetSplit.TRAIN.value, DatasetSplit.PUBLIC_TEST.value)
+    splits: tuple[str, ...] = (DatasetSplit.PUBLIC_TEST.value,)
     business_filter: tuple[str, ...] = ()
     read_only: bool = True
     sampling_seed: int = 20261027

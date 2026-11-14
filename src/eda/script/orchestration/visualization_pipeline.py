@@ -155,79 +155,6 @@ def _gate_status_chart(gates: Sequence[Any]) -> list[ChartData]:
     ]
 
 
-def _cross_split_chart_data(
-    bundles: Mapping[str, SplitBundle],
-    gates: Sequence[Any] = (),
-) -> list[ChartData]:
-    charts: list[ChartData] = []
-    charts.extend(_split_question_feature_chart(bundles))
-    charts.extend(_chart_eligibility_matrix_chart(bundles))
-    charts.extend(_gate_status_chart(gates))
-    return charts
-
-
-def _split_question_feature_chart(
-    bundles: Mapping[str, SplitBundle],
-) -> list[ChartData]:
-    from visualization.question_charts import question_feature_rates
-
-    rates_by_split: dict[str, dict[str, float]] = {}
-    totals: dict[str, int] = {}
-    for split, bundle in sorted(bundles.items()):
-        rates = question_feature_rates(bundle)
-        if not rates:
-            continue
-        rates_by_split[split] = rates
-        totals[split] = len(bundle.question_metadata)
-    if len(rates_by_split) < 2:
-        return []
-    features = sorted({name for rates in rates_by_split.values() for name in rates})
-    labels = [features]
-    series = [
-        {
-            "label": split,
-            "values": [rates_by_split[split].get(feature, 0.0) for feature in features],
-        }
-        for split in sorted(rates_by_split)
-    ]
-    return [
-        ChartData(
-            chart_id="QNA07",
-            split="both",
-            business_id="global",
-            kind="grouped_bar",
-            payload={"labels": features, "series": series},
-            source_ids=tuple(
-                f"{split}:questions.jsonl" for split in sorted(rates_by_split)
-            ),
-            population_n=sum(totals.values()),
-            sample_n=sum(totals.values()),
-            method="normalised_feature_proportions_per_split",
-            unit="percent",
-            denominator_label="số câu hỏi của từng split",
-            title="Đối chiếu đặc trưng câu hỏi giữa các split",
-            x_label="Đặc trưng câu hỏi",
-            y_label="Tỷ trọng câu hỏi (%)",
-            limitations=(
-                "the features are heuristic rules and are not human annotation",
-                "each split is normalised by its own question count",
-                "no reference answer is read from the public test split",
-            ),
-            metadata={
-                "caption": (
-                    "Tỷ trọng đặc trưng câu hỏi chuẩn hóa theo từng split: "
-                    + "; ".join(
-                        f"{split} n={totals[split]}" for split in sorted(totals)
-                    )
-                    + "."
-                ),
-                "features": features,
-                "totals": totals,
-            },
-        )
-    ]
-
-
 def _chart_eligibility_matrix_chart(
     bundles: Mapping[str, SplitBundle],
 ) -> list[ChartData]:
@@ -685,8 +612,8 @@ def run_visualization_improvement(
         for data in _question_chart_data(bundle):
             _render_chart_data(run, bundle, data)
     if bundles:
-        anchor_split = "train" if "train" in bundles else sorted(bundles)[0]
-        for data in _cross_split_chart_data(bundles, gates):
+        anchor_split = "public_test" if "public_test" in bundles else sorted(bundles)[0]
+        for data in _gate_status_chart(gates) + _chart_eligibility_matrix_chart(bundles):
             _render_chart_data(run, bundles[anchor_split], data)
     run.eligibility = build_eligibility_ledger(run.registry.chart_data)
     _build_findings(run, bundles)

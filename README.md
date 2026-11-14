@@ -30,12 +30,11 @@ EDA_Data/
 ├── .gitignore                  # Loại dữ liệu thô, môi trường ảo, cache và file cục bộ khỏi Git
 ├── README.md                   # Tài liệu này
 ├── raw_data/                   # Dữ liệu nguồn cục bộ; bị Git bỏ qua
-│   ├── train/                  # Tập train và nhãn/đáp án nếu có
-│   └── public_test/            # Tập public test
-├── raw_data_hashes.json        # Manifest hash dữ liệu được dùng cho kiểm tra hồi quy hiện có
+│   └── public_test/            # Tập dữ liệu EDA duy nhất (14 doanh nghiệp dev_001 đến dev_014)
+├── raw_data_hashes.json        # Manifest hash dữ liệu được dùng cho kiểm tra hồi quy public_test
 ├── plan/                       # Kế hoạch và tài liệu thiết kế phân tích
 ├── scripts/                    # Script khởi chạy pipeline và tiện ích kiểm tra biểu đồ
-│   ├── run_full.py             # Chạy pipeline trên train và public_test
+│   ├── run_full.py             # Chạy pipeline trên public_test
 │   └── probe_charts.py         # Khảo sát dữ liệu/biểu đồ trong quá trình phát triển
 └── src/eda/
     ├── notebook/
@@ -141,33 +140,26 @@ deactivate
 
 ## Chuẩn bị dữ liệu
 
-Pipeline mặc định tìm dữ liệu tại `raw_data/` ở gốc repository. Mỗi tập dữ liệu cần có thư mục riêng, ví dụ:
+Pipeline mặc định tìm dữ liệu tại `raw_data/public_test` ở gốc repository. Cấu trúc thư mục chuẩn:
 
 ```text
 raw_data/
-├── train/
-│   ├── rulebook.md
-│   ├── calendar.csv
-│   ├── questions.jsonl
-│   ├── answers.jsonl       # Có thể có; cấu hình hiện tại chấp nhận thiếu file này
-│   └── data/
-│       ├── biz_101/
-│       └── biz_102/
 └── public_test/
     ├── rulebook.md
     ├── calendar.csv
     ├── questions.jsonl
     └── data/
         ├── dev_001/
-        └── dev_002/
+        ├── dev_002/
+        └── ...
 ```
 
-Tên `train` và `public_test` phải khớp tên split pipeline đang chạy. Mỗi split hiện cần `rulebook.md`, `calendar.csv`, `questions.jsonl`; `answers.jsonl` là tùy chọn theo cấu hình hiện tại. Đặt dữ liệu bảng trong `data/`, thường chia theo từng đơn vị/bộ dữ liệu (`biz_...`, `dev_...`). Reader hỗ trợ các định dạng được triển khai trong `readers/`, gồm CSV, Excel, JSONL, Markdown, SQLite và file nén.
+Split `public_test` cần `rulebook.md`, `calendar.csv`, `questions.jsonl`. Đặt dữ liệu bảng trong `data/`, chia theo từng đơn vị/bộ dữ liệu (`dev_001` đến `dev_014`). Reader hỗ trợ các định dạng được triển khai trong `readers/`, gồm CSV, Excel, JSONL, Markdown, SQLite và file nén.
 
 Để thêm dữ liệu:
 
-1. Tạo/copy dữ liệu vào đúng `raw_data/<split>/data/<id>/`.
-2. Đặt hoặc cập nhật các file mô tả cấp split (`rulebook.md`, `calendar.csv`, `questions.jsonl`; và `answers.jsonl` nếu có) tại `raw_data/<split>/`.
+1. Tạo/copy dữ liệu vào đúng `raw_data/public_test/data/<id>/`.
+2. Đặt hoặc cập nhật các file mô tả cấp split (`rulebook.md`, `calendar.csv`, `questions.jsonl`) tại `raw_data/public_test/`.
 3. Giữ nguyên tên file, mã hóa và cấu trúc bảng cần thiết; không sửa trực tiếp dữ liệu gốc trong quá trình EDA. Pipeline được cấu hình `read_only=True`.
 4. Nếu nguồn dữ liệu có thông tin cá nhân, tài chính hoặc bí mật, chỉ lưu ở vị trí được phép và không đưa vào commit/chia sẻ.
 
@@ -176,26 +168,26 @@ Tạo khung thư mục rỗng:
 Linux/macOS:
 
 ```bash
-mkdir -p raw_data/train/data raw_data/public_test/data
+mkdir -p raw_data/public_test/data
 ```
 
 Windows PowerShell:
 
 ```powershell
-New-Item -ItemType Directory -Force raw_data/train/data, raw_data/public_test/data
+New-Item -ItemType Directory -Force raw_data/public_test/data
 ```
 
 **Lưu ý:** `.gitignore` loại trừ toàn bộ `raw_data/`, nên Git không lưu thư mục rỗng hay dữ liệu bên trong. Clone repository không tải dữ liệu. Nếu người khác cần bộ dữ liệu, hãy phân phối qua kho dữ liệu được kiểm soát/quy trình nội bộ phù hợp, rồi đặt vào đúng cấu trúc trên. Không bỏ quy tắc ignore để commit dữ liệu thô.
 
 ## Chạy phân tích
 
-Kích hoạt `.venv`, chuẩn bị `raw_data/train/` và `raw_data/public_test/`, rồi chạy từ thư mục gốc repository:
+Kích hoạt `.venv`, chuẩn bị `raw_data/public_test/`, rồi chạy từ thư mục gốc repository:
 
 ```bash
 python scripts/run_full.py
 ```
 
-Script chạy `run_eda` cho hai split `train` và `public_test`, sau đó in JSON tóm tắt gồm `run_id`, thời gian chạy, số biểu đồ, trạng thái và đường dẫn output. Pipeline mặc định đọc dữ liệu, dùng seed lấy mẫu cố định, và ghi artifact dưới `src/eda/artifacts/`.
+Script chạy `run_eda` cho split `public_test`, sau đó in JSON tóm tắt gồm `run_id`, thời gian chạy, số biểu đồ, trạng thái và đường dẫn output. Pipeline mặc định đọc dữ liệu, dùng seed lấy mẫu cố định, và ghi artifact dưới `src/eda/artifacts/`.
 
 Notebook chính nằm ở `src/eda/notebook/eda.ipynb`. Mã nguồn có bộ dựng notebook trong `orchestration/notebook_builder.py`; notebook được tạo/cập nhật theo pipeline để giữ cùng nguồn dữ liệu và logic phân tích.
 
@@ -226,5 +218,5 @@ Artifact được sinh lại từ dữ liệu và mã nguồn. Tránh chỉnh s�
 | Không kích hoạt được venv trên PowerShell | Chạy `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` trong cửa sổ hiện tại, sau đó chạy lại lệnh kích hoạt. |
 | Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat`. |
 | `raw_data root not found` | Chạy lệnh từ repository và kiểm tra `raw_data/` đã được tạo tại gốc. |
-| Báo thiếu split, `rulebook.md`, `calendar.csv` hoặc `questions.jsonl` | Đối chiếu cấu trúc tại [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu), kiểm tra tên và vị trí file. |
-| Chạy lâu hoặc thiếu bộ nhớ | Kiểm tra kích thước dữ liệu và tài nguyên máy; pipeline mặc định xử lý cả hai split. |
+| Báo thiếu split `public_test`, `rulebook.md`, `calendar.csv` hoặc `questions.jsonl` | Đối chiếu cấu trúc tại [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu), kiểm tra tên và vị trí file. |
+| Chạy lâu hoặc thiếu bộ nhớ | Kiểm tra kích thước dữ liệu và tài nguyên máy; pipeline xử lý toàn bộ 14 doanh nghiệp của public_test. |
