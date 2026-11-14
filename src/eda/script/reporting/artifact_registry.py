@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 import os
 import tempfile
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -86,7 +87,14 @@ class ArtifactWriter:
         ) as handle:
             handle.write(payload)
             temporary = Path(handle.name)
-        os.replace(temporary, target)
+        for attempt in range(10):
+            try:
+                os.replace(temporary, target)
+                break
+            except PermissionError:
+                if attempt == 9:
+                    raise
+                time.sleep(0.2 * (attempt + 1))
         manifest = ArtifactManifest(
             run_id=self.run_id,
             artifact_id=artifact_id,
