@@ -46,7 +46,7 @@ from orchestration.tables import (
     gate_ledger_rows,
     global_summary_rows,
     project_overview_rows,
-    rule_diff_rows,
+    rule_registry_rows,
 )
 from orchestration.visualization_pipeline import (
     VisualizationRun,
@@ -58,7 +58,6 @@ from reporting.artifact_registry import ArtifactWriter
 from reporting.business_report import assemble_business_report
 from reporting.global_report import assemble_global_report
 from reporting.scientific_review import derive_scientific_conclusions
-from rulebook.rule_diff import compare_rulebooks
 from rulebook.rule_registry import compile_rule_registry
 from validation.business_qa import validate_business_metrics
 from validation.regression_qa import verify_artifact_hashes, verify_raw_hashes
@@ -96,7 +95,6 @@ GATE_LEDGER_NAME = "gate_ledger.json"
 CHART_REGISTRY_NAME = "chart_registry.json"
 TABLE_REGISTRY_NAME = "table_registry.json"
 GLOBAL_SUMMARY_NAME = "global_summary.json"
-RULE_DIFF_NAME = "rule_diff.json"
 SOURCE_HASH_NAME = "source_hashes.json"
 FIGURE_ROOT_NAME = "figures"
 
@@ -111,7 +109,6 @@ class EdaRun:
     frames: FrameRegistry
     rendered_charts: list[dict[str, Any]]
     rendered_tables: dict[str, dict[str, Any]]
-    rule_diff: Any
     global_report: Any
     visualization: VisualizationRun | None = None
     story_cards: tuple[Any, ...] = ()
@@ -124,7 +121,7 @@ class EdaRun:
         if table_id == "TBL01":
             return project_overview_rows(list(self.bundles.values()))
         if table_id == "TBL16":
-            return rule_diff_rows(self.rule_diff)
+            return rule_registry_rows(list(self.bundles.values()))
         if table_id == "TBL18":
             return global_summary_rows(list(self.bundles.values()))
         if table_id == "TBL20":
@@ -897,19 +894,10 @@ def run_eda(
                     if bundle.question_profile
                     else "no question profile"
                 )
-                + (
-                    "; reference answers profiled in aggregated metadata form"
-                    if bundle.answer_profile
-                    else "; no reference answers for this split"
-                ),
+                + "; no reference answers for this split",
                 "orchestration.pipeline",
                 artifact="question_profile.json",
             )
-        )
-    rule_diff = None
-    if "train" in rule_registries and "public_test" in rule_registries:
-        rule_diff = compare_rulebooks(
-            rule_registries["train"], rule_registries["public_test"]
         )
     for split, registry in rule_registries.items():
         gates.append(
@@ -919,24 +907,7 @@ def run_eda(
                 Status.PASS,
                 f"{len(registry.rules)} rules across {len(registry.sections)} sections",
                 "orchestration.pipeline",
-                artifact="rule_diff.json" if rule_diff is not None else "rulebook.md",
-            )
-        )
-    if rule_diff is not None:
-        gates.append(
-            _gate(
-                "IMP-08",
-                "rulebook_diff",
-                Status.PASS,
-                (
-                    f"{rule_diff.train_rule_count} train rules, "
-                    f"{rule_diff.public_rule_count} public rules, "
-                    f"{len(rule_diff.train_only)} train only, "
-                    f"{len(rule_diff.public_only)} public only, "
-                    f"{len(rule_diff.modified)} modified"
-                ),
-                "orchestration.pipeline",
-                artifact="rule_diff.json",
+                artifact="rulebook.md",
             )
         )
     for split, bundle in bundles.items():
@@ -1149,9 +1120,6 @@ def run_eda(
                 "question_profile": bundle.question_profile.to_dict()
                 if bundle.question_profile
                 else {},
-                "answer_profile": bundle.answer_profile.to_dict()
-                if bundle.answer_profile
-                else {},
                 "alignment": [item.to_dict() for item in bundle.alignment],
                 "rule_registry": bundle.rule_registry.to_dict()
                 if bundle.rule_registry
@@ -1188,47 +1156,8 @@ def run_eda(
             status=bundle.global_profile.status,
             qa_gate="IMP-09",
         )
-    if rule_diff is not None:
-        writer.write_json(
-            relative_path=RULE_DIFF_NAME,
-            payload=rule_diff.to_dict(),
-            artifact_id="rule_diff",
-            artifact_kind="rulebook",
-            split="both",
-            business_id="__global__",
-            source_id="",
-            method_name="rulebook.rule_diff",
-            method_version="rule_diff.v1",
-            population_size=rule_diff.train_rule_count + rule_diff.public_rule_count,
-            observed_n=rule_diff.train_rule_count + rule_diff.public_rule_count,
-            status=Status.PASS,
-            qa_gate="IMP-08",
-        )
     combined = None
-    if len(bundles) > 1 and "train" in bundles and "public_test" in bundles:
-        combined = combine_global_profiles(
-            bundles["train"].global_profile, bundles["public_test"].global_profile
-        )
-        total_biz = (
-            combined["train"]["business_count"]
-            + combined["public_test"]["business_count"]
-        )
-        writer.write_json(
-            relative_path=GLOBAL_SUMMARY_NAME,
-            payload=combined,
-            artifact_id="global_summary.combined",
-            artifact_kind="reporting",
-            split="both",
-            business_id="__global__",
-            source_id="",
-            method_name="cross_business.aggregate",
-            method_version="aggregate.v1",
-            population_size=total_biz,
-            observed_n=total_biz,
-            status=Status.PASS,
-            qa_gate="IMP-09",
-        )
-    elif bundles:
+    if bundles:
         active_profiles = {s: b.global_profile for s, b in bundles.items()}
         combined = combine_global_profiles(profiles=active_profiles)
         anchor_bundle = bundles.get("public_test") or next(iter(bundles.values()))
@@ -1290,7 +1219,6 @@ def run_eda(
         frames=frames,
         rendered_charts=[],
         rendered_tables={},
-        rule_diff=rule_diff,
         global_report=global_report,
     )
     _render_charts(run, writer)

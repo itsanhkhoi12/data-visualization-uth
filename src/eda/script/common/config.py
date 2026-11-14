@@ -60,7 +60,6 @@ class EdaConfig:
         rulebook = root / "rulebook.md"
         calendar = root / "calendar.csv"
         questions = root / "questions.jsonl"
-        answers = root / "answers.jsonl"
         if not rulebook.exists():
             raise SourceMissing(f"rulebook missing for split '{split}': {rulebook}")
         if not calendar.exists():
@@ -73,7 +72,6 @@ class EdaConfig:
             rulebook_path=rulebook,
             calendar_path=calendar,
             questions_path=questions,
-            answers_path=answers if answers.exists() else None,
             read_only=self.read_only,
         )
 

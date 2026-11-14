@@ -96,12 +96,11 @@ def _chart_data_for_split(bundle: SplitBundle) -> list[ChartData]:
 
 
 def _question_chart_data(bundle: SplitBundle) -> list[ChartData]:
-    from visualization.question_charts import build_answer_charts, build_question_charts
+    from visualization.question_charts import build_question_charts
 
     context = BundleContext(split=bundle.split, bundle=bundle)
     charts: list[ChartData] = []
     charts.extend(build_question_charts(context))
-    charts.extend(build_answer_charts(context))
     return charts
 
 

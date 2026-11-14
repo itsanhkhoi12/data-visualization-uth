@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from common.errors import LabelLeakageError, UnsafeOutputPath
+from common.errors import UnsafeOutputPath
 from common.paths import (
     DatasetContext,
     assert_not_in_raw,
@@ -82,29 +82,13 @@ def test_resolve_source_rejects_escape(tmp_path: Path) -> None:
     root = tmp_path / "split"
     root.mkdir()
     context = DatasetContext(
-        split="train",
-        root=root,
-        rulebook_path=root / "rulebook.md",
-        calendar_path=root / "calendar.csv",
-        questions_path=root / "questions.jsonl",
-        answers_path=None,
-    )
-    assert resolve_source(context, "data/biz_101/a.csv").name == "a.csv"
-    with pytest.raises(UnsafeOutputPath):
-        resolve_source(context, "../../escape.csv")
-
-
-def test_t044_public_labels_are_forbidden(tmp_path: Path) -> None:
-    root = tmp_path / "split"
-    root.mkdir()
-    context = DatasetContext(
         split="public_test",
         root=root,
         rulebook_path=root / "rulebook.md",
         calendar_path=root / "calendar.csv",
         questions_path=root / "questions.jsonl",
-        answers_path=None,
     )
-    assert context.has_labels is False
-    with pytest.raises(LabelLeakageError):
-        context.require_labels()
+    assert resolve_source(context, "data/biz_101/a.csv").name == "a.csv"
+    with pytest.raises(UnsafeOutputPath):
+        resolve_source(context, "../../escape.csv")
+

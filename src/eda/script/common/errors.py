@@ -37,9 +37,5 @@ class SourceReadError(EdaError):
     code = "SOURCE_READ_ERROR"
 
 
-class LabelLeakageError(EdaError):
-    code = "LABEL_LEAKAGE"
-
-
 class CorruptArchiveError(EdaError):
     code = "CORRUPT_ARCHIVE"

@@ -36,7 +36,6 @@ def profile_question_alignment(
     split: str,
     question_metadata: Sequence[Mapping[str, Any]],
     available_businesses: Sequence[str],
-    has_labels: bool,
 ) -> tuple[AlignmentEntry, ...]:
     known = set(available_businesses)
     by_business: dict[str, list[Mapping[str, Any]]] = {}
@@ -61,7 +60,7 @@ def profile_question_alignment(
                 businesses_without_source=1 if missing_source else 0,
                 intent_distribution=dict(sorted(intent_distribution.items())),
                 metadata_only=True,
-                label_access="train_reference_available" if has_labels else "no_labels_for_split",
+                label_access="no_labels_for_split",
                 status=Status.PARTIAL if missing_source else Status.PASS,
                 notes=tuple(notes),
             )

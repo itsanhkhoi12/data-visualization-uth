@@ -21,7 +21,7 @@ Dự án phân tích khám phá dữ liệu (Exploratory Data Analysis — EDA) 
 - Git để lấy mã nguồn (nếu làm việc từ repository).
 - Dung lượng đĩa phù hợp với dữ liệu. Phân tích toàn bộ dữ liệu có thể cần nhiều RAM và thời gian.
 
-Các thư viện bên thứ ba được mã nguồn sử dụng trực tiếp: `matplotlib`, `openpyxl`, `nbformat`. Các module khác trong pipeline thuộc thư viện chuẩn Python. Cài thư viện trong virtual environment theo hướng dẫn bên dưới.
+Các thư viện bên thứ ba được mã nguồn sử dụng trực tiếp: `matplotlib`, `openpyxl`, `nbformat`. Để chạy kiểm thử và notebook cần thêm `pytest` và `jupyter`. Các module khác trong pipeline thuộc thư viện chuẩn Python. Cài thư viện trong virtual environment theo hướng dẫn bên dưới.
 
 ## Cấu trúc repository
 
@@ -54,7 +54,7 @@ EDA_Data/
 | `quality/` | Phân tích giá trị thiếu, trùng lặp, tính hợp lệ và toàn vẹn. |
 | `statistics/`, `temporal/` | Thống kê đơn biến/đa biến/liên kết và phân tích trường ngày, lịch, độ phủ thời gian. |
 | `business/`, `inventory/`, `cross_business/` | Chỉ số nghiệp vụ, tồn kho và tổng hợp giữa các đơn vị kinh doanh. |
-| `questions/`, `rulebook/` | Đối chiếu câu hỏi/đáp án và nạp, so sánh quy tắc nghiệp vụ. |
+| `questions/`, `rulebook/` | Lập hồ sơ siêu dữ liệu câu hỏi `questions.jsonl` (không có đáp án) và nạp quy tắc nghiệp vụ từ `rulebook.md` của `public_test`. |
 | `visualization/`, `html_tables/` | Định nghĩa, dựng và xuất biểu đồ/bảng. |
 | `reporting/` | Tạo báo cáo, kết luận có dẫn chứng và đăng ký artifact. |
 | `validation/` | Các cổng QA, kiểm tra thống kê, hình ảnh, hash và hồi quy. |
@@ -87,7 +87,7 @@ Tạo và kích hoạt môi trường:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install matplotlib openpyxl nbformat pytest jupyter
 ```
 
 ### Windows (PowerShell)
@@ -99,13 +99,19 @@ py -3 -m venv .venv
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install matplotlib openpyxl nbformat pytest jupyter
 ```
 
 `Set-ExecutionPolicy -Scope Process` chỉ áp dụng cho cửa sổ PowerShell hiện tại. Nếu dùng Command Prompt thay vì PowerShell, kích hoạt bằng:
 
 ```bat
 .venv\Scripts\activate.bat
+```
+
+Nếu dùng Git Bash (MINGW64) trên Windows, kích hoạt bằng:
+
+```bash
+source .venv/Scripts/activate
 ```
 
 ### macOS
@@ -122,7 +128,7 @@ Tạo và kích hoạt môi trường:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install matplotlib openpyxl nbformat pytest jupyter
 ```
 
 Sau khi kích hoạt, dấu nhắc lệnh thường hiển thị `(.venv)`. Xác nhận Python đang dùng thuộc môi trường dự án:
@@ -158,7 +164,7 @@ Split `public_test` cần `rulebook.md`, `calendar.csv`, `questions.jsonl`. Đ�
 
 Để thêm dữ liệu:
 
-1. Tạo/copy dữ liệu vào đúng `raw_data/public_test/data/<id>/`.
+1. Tạo/copy dữ liệu vào đúng `raw_data/public_test/data/<id>/`. Chỉ đặt split `public_test` trong `raw_data/`; nếu nguồn tải về có thêm thư mục `train/` thì không copy thư mục đó, vì kiểm thử yêu cầu `raw_data/train` không tồn tại.
 2. Đặt hoặc cập nhật các file mô tả cấp split (`rulebook.md`, `calendar.csv`, `questions.jsonl`) tại `raw_data/public_test/`.
 3. Giữ nguyên tên file, mã hóa và cấu trúc bảng cần thiết; không sửa trực tiếp dữ liệu gốc trong quá trình EDA. Pipeline được cấu hình `read_only=True`.
 4. Nếu nguồn dữ liệu có thông tin cá nhân, tài chính hoặc bí mật, chỉ lưu ở vị trí được phép và không đưa vào commit/chia sẻ.
@@ -189,6 +195,18 @@ python scripts/run_full.py
 
 Script chạy `run_eda` cho split `public_test`, sau đó in JSON tóm tắt gồm `run_id`, thời gian chạy, số biểu đồ, trạng thái và đường dẫn output. Pipeline mặc định đọc dữ liệu, dùng seed lấy mẫu cố định, và ghi artifact dưới `src/eda/artifacts/`.
 
+Chạy kiểm thử:
+
+```bash
+python -m pytest src/eda/tests -q
+```
+
+Chạy toàn bộ notebook và lưu output vào file (hoặc mở notebook và chọn **Run All**):
+
+```bash
+jupyter nbconvert --to notebook --execute --inplace src/eda/notebook/eda.ipynb
+```
+
 Notebook chính nằm ở `src/eda/notebook/eda.ipynb`. Mã nguồn có bộ dựng notebook trong `orchestration/notebook_builder.py`; notebook được tạo/cập nhật theo pipeline để giữ cùng nguồn dữ liệu và logic phân tích.
 
 ## Đầu ra
@@ -216,7 +234,8 @@ Artifact được sinh lại từ dữ liệu và mã nguồn. Tránh chỉnh s�
 | --- | --- |
 | `python` không được nhận diện trên Windows | Thử `py -3 --version`, rồi tạo môi trường bằng `py -3 -m venv .venv`. |
 | Không kích hoạt được venv trên PowerShell | Chạy `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` trong cửa sổ hiện tại, sau đó chạy lại lệnh kích hoạt. |
-| Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat`. |
+| Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat pytest jupyter`. |
+| Kiểm thử `test_t060_train_split_is_not_required` thất bại | Xóa thư mục `raw_data/train/`; dự án chỉ dùng `raw_data/public_test/`. |
 | `raw_data root not found` | Chạy lệnh từ repository và kiểm tra `raw_data/` đã được tạo tại gốc. |
 | Báo thiếu split `public_test`, `rulebook.md`, `calendar.csv` hoặc `questions.jsonl` | Đối chiếu cấu trúc tại [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu), kiểm tra tên và vị trí file. |
 | Chạy lâu hoặc thiếu bộ nhớ | Kiểm tra kích thước dữ liệu và tài nguyên máy; pipeline xử lý toàn bộ 14 doanh nghiệp của public_test. |

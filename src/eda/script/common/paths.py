@@ -13,25 +13,11 @@ class DatasetContext:
     rulebook_path: Path
     calendar_path: Path
     questions_path: Path
-    answers_path: Path | None
     read_only: bool = True
 
     @property
     def business_root(self) -> Path:
         return self.root / "data"
-
-    @property
-    def has_labels(self) -> bool:
-        return self.answers_path is not None and self.answers_path.exists()
-
-    def require_labels(self) -> Path:
-        if self.answers_path is None or not self.answers_path.exists():
-            from common.errors import LabelLeakageError
-
-            raise LabelLeakageError(
-                f"split '{self.split}' has no reference answers; label access is forbidden"
-            )
-        return self.answers_path
 
     def business_ids(self) -> list[str]:
         if not self.business_root.exists():

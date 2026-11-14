@@ -9,10 +9,10 @@ from readers.table_reader import LoadedTable
 from schema.relations import profile_relation
 
 
-def _table(header, rows, source_id="train:biz_x:orders") -> LoadedTable:
+def _table(header, rows, source_id="public_test:biz_x:orders") -> LoadedTable:
     return LoadedTable(
         source_id=source_id,
-        split="train",
+        split="public_test",
         business_id="biz_x",
         object_name="orders",
         header=tuple(header),
@@ -77,8 +77,8 @@ def test_findings_compile_and_summarize() -> None:
 
 def test_integrity_reports_fanout_risk() -> None:
     left = _table(["id"], [["1"], ["2"]])
-    right = _table(["id"], [["1"], ["1"], ["2"]], "train:biz_x:lines")
-    evidence = profile_relation(left, right, ("id",), "train", "biz_x")
+    right = _table(["id"], [["1"], ["1"], ["2"]], "public_test:biz_x:lines")
+    evidence = profile_relation(left, right, ("id",), "public_test", "biz_x")
     entries = profile_integrity([evidence])
     kinds = {entry.integrity_kind for entry in entries}
     assert "fanout_risk" in kinds
