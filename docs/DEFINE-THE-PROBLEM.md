@@ -108,6 +108,7 @@ Mọi biểu đồ đưa vào `.ipynb` cuối cùng và slide thuyết trình ph
 Trước khi tính toán bất kỳ chỉ số nào, phải đối chiếu `raw_data/public_test/rulebook.md` và `README.md` của doanh nghiệp đó:
 
 - **Doanh thu & Số đơn:** Chỉ tính đơn **không hủy** và **không trả hàng** (kể cả trả một phần là loại **cả đơn**); đơn đang giao vẫn tính.
+- **Dòng hàng trùng:** Hai dòng giống hệt nhau trong cùng đơn chỉ tính một lần. Trạng thái ghi ở dòng đầu được áp dụng cho các dòng tiếp theo thuộc cùng đơn khi các ô đó để trống.
 - **Mốc thời gian:** Đơn thuộc kỳ theo **ngày đặt** (không theo ngày giao hay ngày thu tiền); đơn trả hàng sau kỳ vẫn bị loại khỏi doanh thu kỳ đặt.
 - **Giá trị đơn:** Tính từ tổng thành tiền các dòng hàng (đã trừ giảm giá dòng); **không** trừ giảm giá toàn đơn, **không** cộng VAT, **không** gồm phí giao hàng.
 - **Quy đổi đơn vị:** Quy về đơn vị cơ bản trước khi tổng hợp hoặc xếp hạng số lượng.

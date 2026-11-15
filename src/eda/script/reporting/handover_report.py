@@ -81,6 +81,7 @@ def audit_final_report(
     report.add(_narrative_section(run))
     report.add(_provenance_section(run))
     report.add(_limitations_section(run))
+    report.add(_improvements_section())
     report.add(_deliverables_section(run))
     return report
 
@@ -248,8 +249,20 @@ def _limitations_section(run: Any) -> HandoverSection:
     return section
 
 
+def _improvements_section() -> HandoverSection:
+    section = HandoverSection(title="6. Hướng cải thiện")
+    section.lines.extend(
+        (
+            "Đối chiếu cờ IQR với dòng hàng và chứng từ để xác định nguyên nhân của từng ngoại lệ có ảnh hưởng lớn.",
+            "Mở rộng bản đồ định dạng nguồn và kiểm chứng số liệu của từng doanh nghiệp trước khi mở rộng phân tích liên ngành.",
+            "Kiểm tra các trường thiếu theo từng nghiệp vụ và đánh giá độ nhạy của kết luận khi có thêm tài liệu đối chiếu.",
+        )
+    )
+    return section
+
+
 def _deliverables_section(run: Any) -> HandoverSection:
-    section = HandoverSection(title="6. Sản phẩm bàn giao")
+    section = HandoverSection(title="7. Sản phẩm bàn giao")
     deliverables = [
         ("figure_registry.json", "registry hình dựng kèm trạng thái và hash"),
         ("chart_registry.json", "registry đặc tả biểu đồ đã kiểm chứng"),

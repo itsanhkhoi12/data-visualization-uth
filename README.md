@@ -192,6 +192,8 @@ Script chạy `run_eda` cho split `public_test`, sau đó in JSON tóm tắt g�
 
 Trong mục 10, dùng bảng kiểm tra để lần theo số dòng thiếu mã, số dòng trùng và số đơn hợp lệ. Đối chiếu ngưỡng IQR với hộp Q1–Q3 trên biểu đồ. Trong mục 11, chọn một thứ và chia số đơn của thứ đó cho số ngày lịch tương ứng trong các tháng chung. Cách kiểm tra này cho phép tái lập một cột trên biểu đồ từ bảng gốc.
 
+Bảng độ phủ đọc cả ngày và timestamp trong sổ hóa đơn của `dev_009`. Với sổ bán hàng `dev_014`, mã số ngày Excel được đổi sang ngày lịch khi tháng và năm khớp với tên sheet. Báo cáo bàn giao ghi các bước mở rộng trong chương **Hướng cải thiện**.
+
 Để cập nhật cấu trúc hoặc lời giải thích của notebook, sửa `orchestration/notebook_builder.py` rồi chạy lại bộ dựng. Ví dụ trên PowerShell:
 
 ```powershell

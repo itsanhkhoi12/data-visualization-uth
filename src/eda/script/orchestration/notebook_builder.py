@@ -183,8 +183,8 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "Tương quan không phải quan hệ nhân quả; phép nối ứng viên chỉ được hiển thị "
         "để đánh giá rủi ro nhân bản, không dùng cho tính chỉ số.",
         tables=(("TBL12", "public_test"),),
-        charts=(("REL01", "public_test", 1), ("REL03", "public_test", 1), ("REL06", "public_test", 1),
-                ("REL07", "public_test", 1), ("REL08", "public_test", 1), ("REL09", "public_test", 1),
+        charts=(("REL03", "public_test", 1), ("REL06", "public_test", 1),
+                ("REL08", "public_test", 1), ("REL09", "public_test", 1),
                 ("REL10", "public_test", 1)),
         story_split="public_test",
         story_limit=2,

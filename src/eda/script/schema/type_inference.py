@@ -106,7 +106,8 @@ def parse_date(value: Any) -> date | None:
             return date(year, month, day)
         except ValueError:
             return None
-    return None
+    timestamp = parse_datetime(text)
+    return timestamp.date() if timestamp is not None else None
 
 
 def parse_datetime(value: Any) -> datetime | None:

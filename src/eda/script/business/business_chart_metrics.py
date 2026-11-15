@@ -4,6 +4,7 @@ import re
 import unicodedata
 from dataclasses import dataclass
 from datetime import date
+from functools import lru_cache
 from typing import Any, Mapping, Sequence
 
 from common.enums import Status
@@ -426,6 +427,7 @@ def _day(value: Any) -> date | None:
     return parsed_datetime.date() if parsed_datetime else None
 
 
+@lru_cache(maxsize=256)
 def classify_status(raw: str) -> str:
     lowered = _normalize(raw)
     if not lowered:
@@ -514,189 +516,108 @@ def _row(
     )
 
 
+def _order_groups(
+    table: LoadedTable, order_column: str
+) -> dict[str, list[Mapping[str, Any]]]:
+    groups: dict[str, list[Mapping[str, Any]]] = {}
+    seen: set[tuple[Any, ...]] = set()
+    for row in table.rows:
+        order_id = _text(row, order_column)
+        if not order_id:
+            continue
+        identity = (order_id, *(row.get(column) for column in table.header))
+        if identity not in seen:
+            seen.add(identity)
+            groups.setdefault(order_id, []).append(row)
+    return groups
+
+
+def _order_status(rows: Sequence[Mapping[str, Any]], column: str) -> str:
+    values = (_text(row, column) for row in rows)
+    labels = {classify_status(value) for value in values if value}
+    if CANCEL_LABEL in labels:
+        return CANCEL_LABEL
+    if RETURN_LABEL in labels:
+        return RETURN_LABEL
+    if not labels or OTHER_LABEL in labels:
+        return OTHER_LABEL
+    return TRANSIT_LABEL if TRANSIT_LABEL in labels else COMPLETE_LABEL
+
+
 def _order_metrics(table: LoadedTable) -> list[BusinessMetricRow]:
     header = table.header
     order_column = _find_column(header, "order_identifier")
     status_column = _find_column(header, "order_status")
     amount_column = _find_column(header, "line_amount")
+    if table.business_id == "dev_009" and table.object_name == "danh_sach_hoa_don.csv":
+        amount_column = "Giá trị hàng" if "Giá trị hàng" in header else None
     date_column = _find_column(header, "order_date")
     group_column = _find_column(header, "product_group")
-    quantity_column = _find_column(header, "quantity")
     base_quantity_column = _find_column(header, "base_quantity")
-    rows = table.rows
+    quantity_column = base_quantity_column or _find_column(header, "quantity")
+    can_classify = bool(order_column and status_column)
+
+    status_counts: dict[str, int] = {}
+    amounts: list[float] = []
+    daily: dict[str, float] = {}
+    dated_orders = 0
+    quantity_totals: dict[str, float] = {}
+    quantity_lines = 0
+    if order_column and status_column:
+        for rows in _order_groups(table, order_column).values():
+            label = _order_status(rows, status_column)
+            status_counts[label] = status_counts.get(label, 0) + 1
+            if label not in {COMPLETE_LABEL, TRANSIT_LABEL}:
+                continue
+            if amount_column:
+                line_amounts = [_number(row, amount_column) for row in rows]
+                if all(amount is not None for amount in line_amounts):
+                    total = round(sum(amount for amount in line_amounts if amount is not None), 6)
+                    amounts.append(total)
+                    if date_column:
+                        days = {
+                            _day(row.get(date_column))
+                            for row in rows
+                            if not is_blank(row.get(date_column))
+                        }
+                        observed_day = next(iter(days)) if len(days) == 1 else None
+                        if observed_day is not None:
+                            day = observed_day.isoformat()
+                            daily[day] = round(daily.get(day, 0.0) + total, 6)
+                            dated_orders += 1
+            if group_column and quantity_column:
+                for row in rows:
+                    group = _text(row, group_column)
+                    quantity = _number(row, quantity_column)
+                    if group and quantity is not None:
+                        quantity_totals[group] = round(quantity_totals.get(group, 0.0) + quantity, 6)
+                        quantity_lines += 1
+
+    metrics = (
+        ("BUS01", "order_amounts", "amounts", amounts, len(amounts),
+         "sum_deduplicated_line_amount_per_eligible_order", can_classify and bool(amount_column),
+         "no_eligible_order_with_complete_line_amounts", "order", "VND"),
+        ("BUS02", "daily_revenue", "daily", daily, dated_orders,
+         "rulebook_revenue_by_valid_order_date", can_classify and bool(date_column and amount_column),
+         "no_eligible_order_with_complete_amounts_and_consistent_date", "order", "VND"),
+        ("BUS03", "quantity_by_product_group", "totals", quantity_totals, quantity_lines,
+         "sum_quantity_of_deduplicated_eligible_order_lines", can_classify and bool(group_column and quantity_column),
+         "no_eligible_line_with_product_group_and_quantity", "order_line",
+         "base unit" if base_quantity_column else "source unit"),
+        ("BUS04", "status_counts", "counts", status_counts, sum(status_counts.values()),
+         "one_status_label_per_distinct_order_identifier", can_classify,
+         "no_valid_order_identifier", "order", "order"),
+    )
     results: list[BusinessMetricRow] = []
-    if order_column and amount_column:
-        totals: dict[str, float] = {}
-        status_by_order: dict[str, str] = {}
-        dates_by_order: dict[str, str] = {}
-        for row in rows:
-            key = _text(row, order_column)
-            if not key:
-                continue
-            amount = _number(row, amount_column)
-            if amount is not None:
-                totals[key] = totals.get(key, 0.0) + amount
-            if key not in status_by_order:
-                status_by_order[key] = _text(row, status_column)
-                dates_by_order[key] = _text(row, date_column)
-        amounts = [round(value, 6) for value in totals.values()]
+    for metric_id, kind, field, values, population, method, supported, empty_reason, grain, unit in metrics:
+        if not supported:
+            status, reason = Status.NOT_APPLICABLE, "required_order_columns_missing"
+        elif not values:
+            status, reason = Status.BLOCKED, empty_reason
+        else:
+            status, reason = Status.PASS, ""
         results.append(
-            _row(
-                table,
-                "BUS01",
-                "order_amounts",
-                {"amounts": amounts},
-                len(totals),
-                "sum_line_amount_per_order_identifier",
-                Status.PASS if amounts else Status.BLOCKED,
-                "" if amounts else "no_valid_order_amount",
-                "order",
-                "VND",
-            )
-        )
-    else:
-        results.append(
-            _row(
-                table,
-                "BUS01",
-                "order_amounts",
-                {"amounts": []},
-                0,
-                "sum_line_amount_per_order_identifier",
-                Status.NOT_APPLICABLE,
-                "missing_order_identifier_or_amount_column",
-                "order",
-                "VND",
-            )
-        )
-    if status_column and order_column:
-        counts: dict[str, int] = {}
-        seen: set[str] = set()
-        for row in rows:
-            key = _text(row, order_column)
-            if not key or key in seen:
-                continue
-            seen.add(key)
-            label = classify_status(_text(row, status_column))
-            counts[label] = counts.get(label, 0) + 1
-        results.append(
-            _row(
-                table,
-                "BUS04",
-                "status_counts",
-                {"counts": counts},
-                len(seen),
-                "one_status_label_per_distinct_order_identifier",
-                Status.PASS if counts else Status.BLOCKED,
-                "" if counts else "no_valid_order_status",
-                "order",
-                "order",
-            )
-        )
-    else:
-        results.append(
-            _row(
-                table,
-                "BUS04",
-                "status_counts",
-                {"counts": {}},
-                0,
-                "one_status_label_per_distinct_order_identifier",
-                Status.NOT_APPLICABLE,
-                "missing_order_identifier_or_status_column",
-                "order",
-                "order",
-            )
-        )
-    if date_column and amount_column and status_column:
-        daily: dict[str, float] = {}
-        counted = 0
-        for row in rows:
-            day = _day(row.get(date_column))
-            if day is None:
-                continue
-            amount = _number(row, amount_column)
-            if amount is None:
-                continue
-            if not revenue_eligible(_text(row, status_column)):
-                continue
-            key = day.isoformat()
-            daily[key] = round(daily.get(key, 0.0) + amount, 6)
-            counted += 1
-        results.append(
-            _row(
-                table,
-                "BUS02",
-                "daily_revenue",
-                {"daily": daily},
-                counted,
-                "rulebook_revenue_excluding_cancelled_and_returned_by_order_date",
-                Status.PASS if daily else Status.BLOCKED,
-                "" if daily else "no_revenue_eligible_rows_with_valid_date",
-                "order_line",
-                "VND",
-            )
-        )
-    else:
-        results.append(
-            _row(
-                table,
-                "BUS02",
-                "daily_revenue",
-                {"daily": {}},
-                0,
-                "rulebook_revenue_excluding_cancelled_and_returned_by_order_date",
-                Status.NOT_APPLICABLE,
-                "missing_order_date_or_amount_or_status_column",
-                "order_line",
-                "VND",
-            )
-        )
-    quantity_target = base_quantity_column or quantity_column
-    if group_column and quantity_target:
-        totals: dict[str, float] = {}
-        counted = 0
-        for row in rows:
-            group = _text(row, group_column)
-            quantity = _number(row, quantity_target)
-            if not group or quantity is None:
-                continue
-            totals[group] = round(totals.get(group, 0.0) + quantity, 6)
-            counted += 1
-        results.append(
-            _row(
-                table,
-                "BUS03",
-                "quantity_by_product_group",
-                {"totals": totals},
-                counted,
-                "sum_base_or_raw_quantity_per_product_group",
-                Status.PASS if totals else Status.BLOCKED,
-                ""
-                if totals
-                else (
-                    "no_base_unit_quantity_column_available"
-                    if base_quantity_column is None
-                    else "no_valid_quantity_rows"
-                ),
-                "order_line",
-                "base unit" if base_quantity_column else "source unit",
-            )
-        )
-    else:
-        results.append(
-            _row(
-                table,
-                "BUS03",
-                "quantity_by_product_group",
-                {"totals": {}},
-                0,
-                "sum_base_or_raw_quantity_per_product_group",
-                Status.NOT_APPLICABLE,
-                "missing_product_group_or_quantity_column",
-                "order_line",
-                "source unit",
-            )
+            _row(table, metric_id, kind, {field: values}, population, method, status, reason, grain, unit)
         )
     return results
 
