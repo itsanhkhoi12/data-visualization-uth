@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from pathlib import Path
 
+from common.bundles import SplitBundle
 from common.enums import Status
 from html_tables.table_renderer import render_table, render_table_from_rows
 from html_tables.table_specs import (
@@ -10,12 +12,54 @@ from html_tables.table_specs import (
     validate_all_table_specs,
     validate_table_spec,
 )
+from orchestration.visualization_pipeline import VisualizationRun, _render_chart_data
+from reporting.visualization_registry import VisualizationRegistry
+from validation.visual_qa import validate_visuals
+from visualization.chart_data import ChartData
 from visualization.chart_specs import (
     CHART_CATALOGUE,
     CHART_SPECS_BY_ID,
     validate_all_chart_specs,
     validate_chart_spec,
 )
+
+
+def test_rendered_variants_preserve_distinct_files_and_hashes(tmp_path: Path) -> None:
+    legacy_path = tmp_path / "figures/example/public_test/dev_001/NUM01.png"
+    legacy_path.parent.mkdir(parents=True)
+    legacy_path.write_bytes(b"legacy figure")
+    data = ChartData(
+        chart_id="NUM01",
+        split="public_test",
+        business_id="dev_001",
+        kind="bar",
+        payload={"labels": ["A"], "values": [2]},
+        source_ids=("file:first",),
+        population_n=2,
+        sample_n=None,
+        method="count",
+        unit="row",
+        denominator_label="rows",
+        title="First field",
+        x_label="Group",
+        y_label="Rows",
+        metadata={"caption": "First field"},
+    )
+    run = VisualizationRun("example", tmp_path, VisualizationRegistry(run_id="example"))
+    bundle = SplitBundle(split="public_test")
+    first = _render_chart_data(run, bundle, data)
+    second = _render_chart_data(
+        run, bundle, replace(data, title="Second field", source_ids=("file:second",))
+    )
+    assert first.figure_id != second.figure_id
+    assert first.png_path != second.png_path
+    assert first.svg_path != second.svg_path
+    assert legacy_path.read_bytes() == b"legacy figure"
+    assert not validate_visuals((first, second), tmp_path).failures()
+
+    (tmp_path / first.png_path).write_bytes((tmp_path / second.png_path).read_bytes())
+    failures = validate_visuals((first, second), tmp_path).failures()
+    assert [item.check_id for item in failures] == [f"VIS-FILE-{first.figure_id}"]
 
 
 def test_t048_chart_specs_are_valid() -> None:

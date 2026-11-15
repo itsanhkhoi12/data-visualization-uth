@@ -87,6 +87,8 @@ Dự án áp dụng **Quy trình 7 bước** (Chương 2, [`SUBJECT-CONTENT.md`]
 
 ## 7. Tiêu chuẩn Thiết kế Biểu đồ và Tính trung thực
 
+Mỗi biểu đồ xuất từ pipeline có định danh, tên tệp và mã băm riêng để hình hiển thị khớp với chú thích và nguồn số liệu.
+
 Mọi biểu đồ đưa vào `.ipynb` cuối cùng và slide thuyết trình phải đáp ứng các nguyên tắc nền tảng trong [`SUBJECT-CONTENT.md`](SUBJECT-CONTENT.md):
 
 - **Nhận thức thị giác (Thang Cleveland–McGill, Chương 1 §1.1):** Ưu tiên mã hóa thông tin quan trọng nhất bằng **vị trí** và **độ dài**; hạn chế dùng diện tích/góc (hạn chế biểu đồ tròn, chỉ dùng tối đa ~5 lát khi cần nhấn tỉ trọng).

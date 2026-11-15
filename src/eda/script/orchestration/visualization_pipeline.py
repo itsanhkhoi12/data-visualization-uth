@@ -51,6 +51,7 @@ class VisualizationRun:
     story_cards: list[StoryCard] = field(default_factory=list)
     provenance: dict[str, ProvenanceRef] = field(default_factory=dict)
     suppressed: list[dict[str, Any]] = field(default_factory=list)
+    figure_counts: dict[tuple[str, str, str], int] = field(default_factory=dict)
 
     def figures(self, chart_id: str) -> tuple[FigureRecord, ...]:
         return self.registry.figures_for_chart(chart_id)
@@ -236,28 +237,20 @@ def _chart_eligibility_matrix_chart(
     ]
 
 
-def _relative_figure_path(
-    run_id: str, split: str, business_id: str, chart_id: str
-) -> str:
-    return f"{FIGURE_ROOT}/{run_id}/{split}/{business_id}/{chart_id}.png"
-
-
-def _relative_svg_path(
-    run_id: str, split: str, business_id: str, chart_id: str
-) -> str:
-    return f"{FIGURE_ROOT}/{run_id}/{split}/{business_id}/{chart_id}.svg"
-
-
 def _render_chart_data(
     run: VisualizationRun,
     bundle: SplitBundle,
     data: ChartData,
 ) -> FigureRecord:
     run.registry.add_chart_data(data)
-    relative = _relative_figure_path(run.run_id, data.split, data.business_id, data.chart_id)
-    svg_relative = _relative_svg_path(
-        run.run_id, data.split, data.business_id, data.chart_id
-    )
+    key = (data.split, data.business_id, data.chart_id)
+    variant = run.figure_counts.get(key, 0) + 1
+    run.figure_counts[key] = variant
+    name = data.chart_id if variant == 1 else f"{data.chart_id}-{variant}"
+    figure_id = f"{name}.{data.split}.{data.business_id}"
+    relative_stem = f"{FIGURE_ROOT}/{run.run_id}/analysis/{data.split}/{data.business_id}/{name}"
+    relative = f"{relative_stem}.png"
+    svg_relative = f"{relative_stem}.svg"
     png_target = run.output_root / relative
     svg_target = run.output_root / svg_relative
     try:
@@ -266,7 +259,7 @@ def _render_chart_data(
         rendered = None
         reason = f"render_failed:{type(error).__name__}"
         record = FigureRecord(
-            figure_id=f"{data.chart_id}.{data.split}.{data.business_id}",
+            figure_id=figure_id,
             chart_id=data.chart_id,
             split=data.split,
             business_id=data.business_id,
@@ -294,7 +287,7 @@ def _render_chart_data(
         svg_hash = f"sha256:{hashlib.sha256(svg_payload).hexdigest()}"
         svg_size = len(svg_payload)
     record = FigureRecord(
-        figure_id=rendered.figure_id,
+        figure_id=figure_id,
         chart_id=data.chart_id,
         split=data.split,
         business_id=data.business_id,
@@ -328,7 +321,7 @@ def _build_provenance(
         for source_id in record.source_ids:
             if source_id in by_id:
                 source_hashes.append(by_id[source_id])
-    artifact_id = f"figure.{record.chart_id}.{record.split}.{record.business_id}"
+    artifact_id = f"figure.{record.figure_id}"
     return ProvenanceRef(
         artifact_id=artifact_id,
         artifact_path=record.png_path,
