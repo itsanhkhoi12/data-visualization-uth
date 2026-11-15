@@ -4,9 +4,11 @@ import math
 from dataclasses import dataclass
 from typing import Any, Sequence
 
+from scipy.stats import kendalltau
+
 from common.enums import Status
 
-METHOD_VERSION = "association_profile.v1"
+METHOD_VERSION = "association_profile.v2"
 MIN_PAIRS = 3
 
 
@@ -39,34 +41,10 @@ class AssociationEntry:
 
 
 def kendall_tau_b(xs: Sequence[float], ys: Sequence[float]) -> float | None:
-    count = len(xs)
-    if count < 2:
+    if len(xs) < 2:
         return None
-    concordant = 0
-    discordant = 0
-    tied_x = 0
-    tied_y = 0
-    for i in range(count - 1):
-        dx = xs[i + 1] - xs[i]
-        for j in range(i + 2, count + 1):
-            dy = ys[j - 1] - ys[i]
-            if dx == 0 and dy == 0:
-                tied_x += 1
-                tied_y += 1
-            elif dx == 0:
-                tied_x += 1
-            elif dy == 0:
-                tied_y += 1
-            elif (dx > 0) == (dy > 0):
-                concordant += 1
-            else:
-                discordant += 1
-    denominator = math.sqrt(
-        (concordant + discordant + tied_x) * (concordant + discordant + tied_y)
-    )
-    if denominator == 0:
-        return None
-    return (concordant - discordant) / denominator
+    result = float(kendalltau(xs, ys, variant="b").statistic)
+    return result if math.isfinite(result) else None
 
 
 def pearson_from_ranks(ranks_x: Sequence[float], ranks_y: Sequence[float]) -> float | None:

@@ -25,13 +25,14 @@ PRELUDE_CODE = (
     "from IPython.display import HTML, Image, Markdown, display\n"
     "\n"
     "from common.config import load_config\n"
+    "from orchestration.notebook_builder import course_figure_limits\n"
     "from orchestration.pipeline import run_eda\n"
     "from orchestration.study_examples import (\n"
     "    load_order_studies, order_audit, order_value_figure, weekly_activity_figure,\n"
     ")\n"
     "\n"
     "config = load_config()\n"
-    "run = run_eda(config)\n"
+    "run = run_eda(config, figure_limits=course_figure_limits())\n"
     "run.run_id\n"
 )
 
@@ -316,6 +317,14 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         story_limit=6,
     ),
 )
+
+
+def course_figure_limits() -> dict[str, int]:
+    limits: dict[str, int] = {}
+    for section in SECTIONS:
+        for chart_id, _, limit in section["charts"]:
+            limits[chart_id] = max(limits.get(chart_id, 0), limit)
+    return limits
 
 
 NOTEBOOK_METADATA = {

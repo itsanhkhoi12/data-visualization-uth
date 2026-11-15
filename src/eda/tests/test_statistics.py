@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import pytest
+
+from eda_statistics.association_profile import kendall_tau_b
 from eda_statistics.bivariate import profile_bivariate
 from eda_statistics.categorical import (
     CategoricalProfileRequest,
@@ -14,6 +17,14 @@ from eda_statistics.numeric import (
     histogram_bins,
     profile_numeric,
 )
+
+
+def test_kendall_tau_b_counts_all_pairs_and_adjusts_for_ties() -> None:
+    assert kendall_tau_b([1], [3]) is None
+    assert kendall_tau_b([1, 2], [5, 4]) == pytest.approx(-1)
+    assert kendall_tau_b([1, 3, 2], [1, 2, 3]) == pytest.approx(1 / 3)
+    assert kendall_tau_b([1, 1, 2], [2, 2, 3]) == pytest.approx(1)
+    assert kendall_tau_b([1, 1, 1], [1, 2, 3]) is None
 
 
 def _numeric_request(values) -> NumericProfileRequest:

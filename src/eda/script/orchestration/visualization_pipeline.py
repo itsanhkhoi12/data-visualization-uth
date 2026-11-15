@@ -565,19 +565,28 @@ def run_visualization_improvement(
     output_root: Path,
     bundles: Mapping[str, SplitBundle],
     gates: Sequence[Any] = (),
+    *,
+    figure_limits: Mapping[str, int] | None = None,
 ) -> VisualizationRun:
     run = VisualizationRun(
         run_id=run_id,
         output_root=output_root,
         registry=VisualizationRegistry(run_id=run_id),
     )
-    for split, bundle in bundles.items():
+    rendered_counts: dict[tuple[str, str], int] = {}
+    for bundle in bundles.values():
         for data in _chart_data_for_split(bundle):
-            _render_chart_data(run, bundle, data)
+            key = (data.split, data.chart_id)
+            count = rendered_counts.get(key, 0)
+            if figure_limits is not None and count >= figure_limits.get(data.chart_id, 0):
+                continue
+            if _render_chart_data(run, bundle, data).status == Status.PASS:
+                rendered_counts[key] = count + 1
     if bundles:
         anchor_split = "public_test" if "public_test" in bundles else sorted(bundles)[0]
         for data in _gate_status_chart(gates) + _chart_eligibility_matrix_chart(bundles):
-            _render_chart_data(run, bundles[anchor_split], data)
+            if figure_limits is None or figure_limits.get(data.chart_id, 0):
+                _render_chart_data(run, bundles[anchor_split], data)
     run.eligibility = build_eligibility_ledger(run.registry.chart_data)
     _build_findings(run, bundles)
     _build_story_cards(run)

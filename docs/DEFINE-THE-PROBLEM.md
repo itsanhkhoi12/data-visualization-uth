@@ -79,7 +79,7 @@ Dự án áp dụng **Quy trình 7 bước** (Chương 2, [`SUBJECT-CONTENT.md`]
 2. **Thu thập & kiểm tra nguồn (§2.2):** Minh bạch nguồn, cỡ mẫu và giới hạn dữ liệu trên mỗi biểu đồ.
 3. **Làm sạch & cấu trúc hóa (§2.3):** Không sửa dữ liệu gốc; kiểm tra giá trị thiếu (heatmap/bảng thống kê), chuẩn hóa định dạng ngày/số/đơn vị, loại trùng lặp, đánh dấu ngoại lệ để kiểm tra lại bằng **quy tắc IQR** ($\text{IQR} = Q_3 - Q_1$; ngoài $[Q_1 - 1.5\times\text{IQR},\; Q_3 + 1.5\times\text{IQR}]$) và tổ chức bảng theo chuẩn **Tidy Data** (dạng dài — mỗi biến 1 cột, mỗi quan sát 1 dòng).
 4. **Chọn loại biểu đồ (§2.4):** Dựa trên kiểu dữ liệu (danh nghĩa, thứ tự, rời rạc, liên tục) và chức năng thông điệp (so sánh, thời gian, phân phối, quan hệ, thành phần).
-5. **Công cụ thực hiện (§2.5 & Chương 3):** Sử dụng thống nhất hệ sinh thái **`Python`**, **`pandas`**, **`NumPy`**, **`matplotlib`** và **`seaborn`**.
+5. **Công cụ thực hiện (§2.5 & Chương 3):** Sử dụng thống nhất hệ sinh thái **`Python`**, **`pandas`**, **`NumPy`**, **`matplotlib`** và **`seaborn`**. Các biểu đồ tương quan có dùng phép tính Kendall tau-b trong [SciPy](https://docs.scipy.org/doc/scipy/reference/generated/scipy.stats.kendalltau.html).
 6. **Chuẩn bị & biến đổi dữ liệu cho biểu đồ (§2.6):** Tổng hợp, chuẩn hóa về **tỉ lệ / phần trăm** khi so sánh nhóm khác quy mô, sắp xếp theo giá trị, gộp nhóm quá nhỏ khi cần, kiểm soát thang đo (tuyến tính vs. log khi trải nhiều bậc độ lớn).
 7. **Tạo & tinh chỉnh biểu đồ (§2.7):** Tuân thủ chuẩn chất lượng trực quan ở Mục 7 dưới đây.
 

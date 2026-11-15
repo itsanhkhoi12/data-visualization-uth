@@ -21,7 +21,7 @@ Dự án khám phá dữ liệu bán hàng và vận hành của 14 doanh nghi�
 - Git để lấy mã nguồn (nếu làm việc từ repository).
 - Dung lượng đĩa phù hợp với dữ liệu. Phân tích toàn bộ dữ liệu có thể cần nhiều RAM và thời gian.
 
-Notebook và pipeline dùng `matplotlib`, `openpyxl`, `nbformat`, `pandas`, `seaborn` và `ipykernel`. Cài các thư viện trong môi trường ảo theo hướng dẫn bên dưới.
+Notebook và pipeline dùng `matplotlib`, `openpyxl`, `nbformat`, `pandas`, `seaborn`, `scipy` và `ipykernel`. Cài các thư viện trong môi trường ảo theo hướng dẫn bên dưới.
 
 ## Cấu trúc repository
 
@@ -87,7 +87,7 @@ Tạo và kích hoạt môi trường:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel
+python -m pip install matplotlib openpyxl nbformat pandas seaborn scipy ipykernel
 ```
 
 ### Windows (PowerShell)
@@ -99,7 +99,7 @@ py -3 -m venv .venv
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel
+python -m pip install matplotlib openpyxl nbformat pandas seaborn scipy ipykernel
 ```
 
 `Set-ExecutionPolicy -Scope Process` chỉ áp dụng cho cửa sổ PowerShell hiện tại. Nếu dùng Command Prompt thay vì PowerShell, kích hoạt bằng:
@@ -122,7 +122,7 @@ Tạo và kích hoạt môi trường:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel
+python -m pip install matplotlib openpyxl nbformat pandas seaborn scipy ipykernel
 ```
 
 Sau khi kích hoạt, dấu nhắc lệnh thường hiển thị `(.venv)`. Xác nhận Python đang dùng thuộc môi trường dự án:
@@ -188,7 +188,7 @@ python scripts/run_full.py
 
 Script chạy `run_eda` cho split `public_test`, sau đó in JSON tóm tắt gồm `run_id`, thời gian chạy, số biểu đồ, trạng thái và đường dẫn output. Pipeline mặc định đọc dữ liệu, dùng seed lấy mẫu cố định, và ghi artifact dưới `src/eda/artifacts/`.
 
-Để xem bài phân tích của môn học, mở [eda.ipynb](src/eda/notebook/eda.ipynb) trong trình soạn thảo có hỗ trợ Jupyter, chọn kernel Python của `.venv` và chạy tất cả các ô theo thứ tự. Notebook tự chạy pipeline, trình bày bảng kiểm tra dữ liệu và xuất hai biểu đồ minh họa độ phân tán và nhịp bán sang `figures/course/` của lần chạy.
+Để xem bài phân tích của môn học, mở [eda.ipynb](src/eda/notebook/eda.ipynb) trong trình soạn thảo có hỗ trợ Jupyter, chọn kernel Python của `.venv` và chạy tất cả các ô theo thứ tự. Notebook tự chạy pipeline trên 14 doanh nghiệp, kết xuất các biểu đồ được dùng trong bài và lưu hai hình minh họa về độ phân tán và nhịp bán trong `figures/course/`. Lệnh CLI ở trên kết xuất bộ biểu đồ kỹ thuật đầy đủ nên cần nhiều thời gian hơn.
 
 Trong mục 10, dùng bảng kiểm tra để lần theo số dòng thiếu mã, số dòng trùng và số đơn hợp lệ. Đối chiếu ngưỡng IQR với hộp Q1–Q3 trên biểu đồ. Trong mục 11, chọn một thứ và chia số đơn của thứ đó cho số ngày lịch tương ứng trong các tháng chung. Cách kiểm tra này cho phép tái lập một cột trên biểu đồ từ bảng gốc.
 
@@ -224,7 +224,7 @@ Artifact được sinh lại từ dữ liệu và mã nguồn. Tránh chỉnh s�
 | --- | --- |
 | `python` không được nhận diện trên Windows | Thử `py -3 --version`, rồi tạo môi trường bằng `py -3 -m venv .venv`. |
 | Không kích hoạt được venv trên PowerShell | Chạy `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` trong cửa sổ hiện tại, sau đó chạy lại lệnh kích hoạt. |
-| Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel`. |
+| Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat pandas seaborn scipy ipykernel`. |
 | `raw_data root not found` | Chạy lệnh từ repository và kiểm tra `raw_data/` đã được tạo tại gốc. |
 | Báo thiếu `public_test`, `rulebook.md` hoặc `calendar.csv` | Đối chiếu cấu trúc tại [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu), kiểm tra tên và vị trí file. |
 | Chạy lâu hoặc thiếu bộ nhớ | Kiểm tra kích thước dữ liệu và tài nguyên máy; pipeline xử lý toàn bộ 14 doanh nghiệp của public_test. |

@@ -750,6 +750,8 @@ def run_eda(
     config: EdaConfig | None = None,
     splits: Sequence[str] | None = None,
     run_id: str | None = None,
+    *,
+    figure_limits: Mapping[str, int] | None = None,
 ) -> EdaRun:
     config = config or load_config()
     resolved_run_id = run_id or _run_id(config)
@@ -932,9 +934,10 @@ def run_eda(
             )
         )
     frames = FrameRegistry()
-    for bundle in bundles.values():
-        _build_frames(bundle, frames)
-        _numeric_chart_frames(bundle, frames)
+    if figure_limits is None:
+        for bundle in bundles.values():
+            _build_frames(bundle, frames)
+            _numeric_chart_frames(bundle, frames)
     source_hashes = _source_hashes(bundles)
     rule_hash = _rule_hashes(bundles)
     config_hash = config.fingerprint()
@@ -1252,7 +1255,8 @@ def run_eda(
         rule_diff=rule_diff,
         global_report=global_report,
     )
-    _render_charts(run, writer)
+    if figure_limits is None:
+        _render_charts(run, writer)
     _prerender_tables(run, bundles)
     chart_validations = validate_all_chart_specs(CHART_CATALOGUE)
     writer.write_json(
@@ -1366,7 +1370,7 @@ def run_eda(
         )
     )
     visualization = run_visualization_improvement(
-        resolved_run_id, output_root, bundles, gates
+        resolved_run_id, output_root, bundles, gates, figure_limits=figure_limits
     )
     run.visualization = visualization
     run.story_cards = tuple(visualization.story_cards)
@@ -1525,6 +1529,7 @@ def run_eda(
             for split, bundle in bundles.items()
         },
         "chart_manifest_count": len(run.rendered_charts),
+        "figure_limits": dict(figure_limits) if figure_limits is not None else None,
         "table_spec_count": len(TABLE_CATALOGUE),
         "status": Status.PASS.value,
         "notes": [
