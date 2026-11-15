@@ -1,8 +1,10 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 from pathlib import Path
 
+from common.paths import is_benchmark_file
 from common.provenance import fingerprint_file
 
 WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
@@ -12,10 +14,11 @@ BASELINE_PATH = WORKSPACE_ROOT / "raw_data_hashes.json"
 
 def build_raw_data_baseline() -> dict[str, str]:
     hashes: dict[str, str] = {}
-    for path in sorted(RAW_ROOT.rglob("*")):
-        if not path.is_file():
+    for path in sorted((RAW_ROOT / "public_test").rglob("*")):
+        if not path.is_file() or is_benchmark_file(path):
             continue
-        hashes[path.relative_to(RAW_ROOT).as_posix()] = fingerprint_file(path)
+        name = unicodedata.normalize("NFC", path.relative_to(RAW_ROOT).as_posix())
+        hashes[name] = fingerprint_file(path)
     return hashes
 
 

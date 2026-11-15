@@ -46,7 +46,6 @@ from orchestration.tables import (
     gate_ledger_rows,
     global_summary_rows,
     project_overview_rows,
-    rule_diff_rows,
 )
 from orchestration.visualization_pipeline import (
     VisualizationRun,
@@ -78,8 +77,6 @@ from visualization.chart_frames import (
     build_num01,
     build_num02,
     build_num04,
-    build_qna01,
-    build_qna03,
     build_tmp01,
     build_tmp03,
 )
@@ -124,7 +121,12 @@ class EdaRun:
         if table_id == "TBL01":
             return project_overview_rows(list(self.bundles.values()))
         if table_id == "TBL16":
-            return rule_diff_rows(self.rule_diff)
+            return [
+                rule.to_dict()
+                for bundle in self.bundles.values()
+                if bundle.rule_registry is not None
+                for rule in bundle.rule_registry.rules
+            ]
         if table_id == "TBL18":
             return global_summary_rows(list(self.bundles.values()))
         if table_id == "TBL20":
@@ -287,7 +289,6 @@ def _table_is_split_scoped(table_id: str) -> bool:
         "TBL12",
         "TBL13",
         "TBL14",
-        "TBL15",
         "TBL17",
         "TBL19",
     }
@@ -587,24 +588,6 @@ def _build_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
                 [coverage.source_id for coverage in bundle.coverages],
             )
         )
-    profile = bundle.question_profile
-    if profile:
-        registry.add(
-            build_qna01(
-                bundle.split,
-                list(bundle.question_lengths),
-                profile.question_count,
-                [profile.split],
-            )
-        )
-        registry.add(
-            build_qna03(
-                bundle.split,
-                profile.time_expression_counts,
-                profile.question_count,
-                [profile.split],
-            )
-        )
     if bundle.coverages:
         business_ids = sorted(
             {coverage.business_id for coverage in bundle.coverages}
@@ -679,7 +662,7 @@ def _build_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
 
 
 def _numeric_chart_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
-    from statistics.numeric import empirical_cdf, histogram_bins
+    from eda_statistics.numeric import empirical_cdf, histogram_bins
 
     for source_id, columns in bundle.numeric_samples.items():
         business_id = ""
@@ -890,20 +873,11 @@ def run_eda(
         gates.append(
             _gate(
                 "IMP-07",
-                f"question_metadata_{split}",
+                f"operating_data_scope_{split}",
                 Status.PASS,
-                (
-                    f"{bundle.question_profile.question_count} questions profiled"
-                    if bundle.question_profile
-                    else "no question profile"
-                )
-                + (
-                    "; reference answers profiled in aggregated metadata form"
-                    if bundle.answer_profile
-                    else "; no reference answers for this split"
-                ),
-                "orchestration.pipeline",
-                artifact="question_profile.json",
+                "inputs are business records, README files, the rulebook and calendar",
+                "inventory.file_manifest",
+                artifact="file_manifest.json",
             )
         )
     rule_diff = None
@@ -1144,34 +1118,19 @@ def run_eda(
             qa_gate="IMP-06",
         )
         writer.write_json(
-            relative_path=f"splits/{split}/question_profile.json",
-            payload={
-                "question_profile": bundle.question_profile.to_dict()
-                if bundle.question_profile
-                else {},
-                "answer_profile": bundle.answer_profile.to_dict()
-                if bundle.answer_profile
-                else {},
-                "alignment": [item.to_dict() for item in bundle.alignment],
-                "rule_registry": bundle.rule_registry.to_dict()
-                if bundle.rule_registry
-                else {},
-            },
-            artifact_id=f"question_profile.{split}",
-            artifact_kind="questions",
+            relative_path=f"splits/{split}/rule_registry.json",
+            payload=bundle.rule_registry.to_dict(),
+            artifact_id=f"rule_registry.{split}",
+            artifact_kind="rulebook",
             split=split,
             business_id="__global__",
             source_id="",
-            method_name="questions.question_profile",
-            method_version="question_profile.v1",
-            population_size=bundle.question_profile.question_count
-            if bundle.question_profile
-            else 0,
-            observed_n=bundle.question_profile.question_count
-            if bundle.question_profile
-            else 0,
+            method_name="rulebook.rule_registry",
+            method_version="rule_registry.v1",
+            population_size=len(bundle.rule_registry.rules),
+            observed_n=len(bundle.rule_registry.rules),
             status=Status.PASS,
-            qa_gate="IMP-07",
+            qa_gate="IMP-08",
         )
         writer.write_json(
             relative_path=f"splits/{split}/global_summary.json",
@@ -1565,17 +1524,11 @@ def run_eda(
             split: len(bundle.manifest.records) if bundle.manifest else 0
             for split, bundle in bundles.items()
         },
-        "question_counts": {
-            split: bundle.question_profile.question_count
-            if bundle.question_profile
-            else 0
-            for split, bundle in bundles.items()
-        },
         "chart_manifest_count": len(run.rendered_charts),
         "table_spec_count": len(TABLE_CATALOGUE),
         "status": Status.PASS.value,
         "notes": [
-            "public test reference answers are absent and were never accessed",
+            "competition question and answer files are outside the EDA inputs",
             "row counts are source object counts and never transaction counts",
         ],
     }

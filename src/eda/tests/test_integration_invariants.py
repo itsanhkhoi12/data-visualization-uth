@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ast
 import importlib
+import unicodedata
 from pathlib import Path
 
 import pytest
@@ -20,7 +21,7 @@ LAYER_ORDER = (
     "schema",
     "profiling",
     "quality",
-    "statistics",
+    "eda_statistics",
     "temporal",
     "rulebook",
     "business",
@@ -74,10 +75,15 @@ def test_t059_raw_sources_are_not_modified() -> None:
     import json
 
     recorded = json.loads(baseline.read_text(encoding="utf-8"))
+    local_paths = {
+        unicodedata.normalize("NFC", path.relative_to(RAW_ROOT).as_posix()): path
+        for path in (RAW_ROOT / "public_test").rglob("*")
+        if path.is_file()
+    }
     changed: list[str] = []
     for relative, expected in recorded.items():
-        path = RAW_ROOT / relative
-        if not path.exists():
+        path = local_paths.get(unicodedata.normalize("NFC", relative))
+        if path is None:
             changed.append(f"{relative}:missing")
             continue
         if fingerprint_file(path) != expected:
@@ -119,6 +125,41 @@ def test_t060_train_split_is_not_required() -> None:
 def test_t060_public_test_has_no_answers_file() -> None:
     answers = RAW_ROOT / "public_test" / "answers.jsonl"
     assert not answers.exists()
+
+
+def test_operating_data_scope_excludes_competition_files(tmp_path: Path) -> None:
+    from common.config import EdaConfig
+    from inventory.file_manifest import build_file_manifest
+    from validation.regression_qa import verify_raw_hashes
+
+    raw = tmp_path / "raw_data"
+    split = raw / "public_test"
+    business = split / "data" / "dev_001"
+    business.mkdir(parents=True)
+    for name in ("rulebook.md", "calendar.csv"):
+        (split / name).touch()
+    for name in ("questions.jsonl", "answers.jsonl"):
+        (split / name).write_bytes(b"{invalid benchmark data")
+    (business / "orders.csv").touch()
+    train = raw / "train"
+    train.mkdir()
+    (train / "unrelated.csv").touch()
+
+    config = EdaConfig(tmp_path, raw, tmp_path / "artifacts")
+    context = config.context_for("public_test")
+    records = build_file_manifest(context).records
+    assert {item.logical_path for item in records} == {
+        "rulebook.md",
+        "calendar.csv",
+        "data/dev_001/orders.csv",
+    }
+    baseline = tmp_path / "baseline.json"
+    import json
+
+    baseline.write_text(json.dumps({
+        f"public_test/{item.logical_path}": item.content_hash for item in records
+    }), encoding="utf-8")
+    assert not verify_raw_hashes(baseline, raw).failures()
 
 
 def test_status_enum_values_are_stable() -> None:

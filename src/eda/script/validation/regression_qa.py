@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import json
+import unicodedata
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from common.enums import Status
+from common.paths import is_benchmark_file
 from common.provenance import fingerprint_file
 from validation.validation_contracts import ValidationCheck, ValidationLedger
 
@@ -27,12 +29,17 @@ def verify_raw_hashes(baseline_path: Path, raw_root: Path) -> ValidationLedger:
             )
         )
         return ledger
-    baseline = json.loads(baseline_path.read_text(encoding="utf-8"))
+    baseline = {
+        unicodedata.normalize("NFC", name): digest
+        for name, digest in json.loads(baseline_path.read_text(encoding="utf-8")).items()
+        if name.startswith("public_test/") and not is_benchmark_file(Path(name))
+    }
     current: dict[str, str] = {}
-    for path in sorted(raw_root.rglob("*")):
-        if not path.is_file():
+    for path in sorted((raw_root / "public_test").rglob("*")):
+        if not path.is_file() or is_benchmark_file(path):
             continue
-        current[path.relative_to(raw_root).as_posix()] = fingerprint_file(path)
+        name = unicodedata.normalize("NFC", path.relative_to(raw_root).as_posix())
+        current[name] = fingerprint_file(path)
     changed: list[str] = []
     added: list[str] = []
     removed: list[str] = []

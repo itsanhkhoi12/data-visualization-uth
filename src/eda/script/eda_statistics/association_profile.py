@@ -143,7 +143,7 @@ def association_entries(
                     )
                 )
         return tuple(entries)
-    from statistics.bivariate import pearson, spearman
+    from eda_statistics.bivariate import pearson, spearman
 
     for index in range(len(usable)):
         for other in range(index + 1, len(usable)):

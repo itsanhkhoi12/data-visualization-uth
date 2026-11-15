@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-from statistics.bivariate import profile_bivariate
-from statistics.categorical import (
+from eda_statistics.bivariate import profile_bivariate
+from eda_statistics.categorical import (
     CategoricalProfileRequest,
     alias_candidates_for_field,
     profile_categorical,
     top_k_with_others,
 )
-from statistics.multivariate import profile_multivariate
-from statistics.numeric import (
+from eda_statistics.multivariate import profile_multivariate
+from eda_statistics.numeric import (
     NumericProfileRequest,
     empirical_cdf,
     histogram_bins,

@@ -246,6 +246,7 @@ STATUS_RETURN_TOKENS = (
     "return",
     "đổi trả",
     "doi tra",
+    "hàng trả về",
     "hoàn hàng",
     "hoan hang",
 )

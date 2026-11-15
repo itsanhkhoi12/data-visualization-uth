@@ -4,7 +4,7 @@ import math
 from dataclasses import dataclass
 from typing import Any, Sequence
 
-from statistics.robust_stats import quantile_of
+from eda_statistics.robust_stats import quantile_of
 
 METHOD_VERSION = "histogram_bins.v1"
 MIN_BIN_COUNT = 5

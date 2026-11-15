@@ -132,7 +132,7 @@ def test_t051_table_accessibility_headers() -> None:
 def test_table_specs_are_valid() -> None:
     validations = validate_all_table_specs()
     assert all(item.valid for item in validations)
-    assert len(TABLE_CATALOGUE) == 20
+    assert len(TABLE_CATALOGUE) == 19
 
 
 def test_table_spec_validation_detects_missing_fields() -> None:

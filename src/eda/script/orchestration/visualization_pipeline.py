@@ -95,16 +95,6 @@ def _chart_data_for_split(bundle: SplitBundle) -> list[ChartData]:
     return charts
 
 
-def _question_chart_data(bundle: SplitBundle) -> list[ChartData]:
-    from visualization.question_charts import build_answer_charts, build_question_charts
-
-    context = BundleContext(split=bundle.split, bundle=bundle)
-    charts: list[ChartData] = []
-    charts.extend(build_question_charts(context))
-    charts.extend(build_answer_charts(context))
-    return charts
-
-
 def _gate_status_chart(gates: Sequence[Any]) -> list[ChartData]:
     from visualization.quality_charts import GATE_STATUS_ORDER
 
@@ -166,7 +156,6 @@ def _chart_eligibility_matrix_chart(
         "REL",
         "TIME",
         "BUS",
-        "QNA",
         "GLOBAL",
     )
     requirements: dict[str, tuple[str, ...]] = {
@@ -177,7 +166,6 @@ def _chart_eligibility_matrix_chart(
         "REL": ("measure", "amount", "quantity", "categorical", "boolean"),
         "TIME": ("date", "datetime"),
         "BUS": ("measure", "amount", "quantity"),
-        "QNA": ("categorical", "boolean"),
         "GLOBAL": ("measure", "amount", "quantity", "categorical", "boolean"),
     }
     business_ids = sorted(
@@ -363,7 +351,7 @@ def _numeric_metrics_for_findings(
     bundle: SplitBundle,
 ) -> list[EvidenceMetric]:
     from reporting.evidence_findings import metric_from_numeric_profile
-    from statistics.robust_stats import compute_robust_dispersion, iqr_outlier_masks
+    from eda_statistics.robust_stats import compute_robust_dispersion, iqr_outlier_masks
 
     metrics: list[EvidenceMetric] = []
     for entry in bundle.numeric_stats:
@@ -473,28 +461,6 @@ def _global_metrics_for_findings(bundle: SplitBundle) -> list[EvidenceMetric]:
     ]
 
 
-def _question_metrics_for_findings(bundle: SplitBundle) -> list[EvidenceMetric]:
-    from reporting.evidence_findings import metric_from_question_profile
-
-    profile = bundle.question_profile
-    if profile is None:
-        return []
-    return [
-        metric_from_question_profile(
-            metric_id=f"questions.{bundle.split}.profile",
-            split=bundle.split,
-            question_count=profile.question_count,
-            median_length=profile.length_characters_median,
-            intent_count=len(profile.intent_candidates),
-            time_expression_count=len(profile.time_expression_counts),
-            chart_id="QNA01",
-            limitations=(
-                "chỉ là siêu dữ liệu câu hỏi; không suy ra đáp án của câu hỏi",
-            ),
-        )
-    ]
-
-
 def _build_findings(
     run: VisualizationRun,
     bundles: Mapping[str, SplitBundle],
@@ -512,7 +478,6 @@ def _build_findings(
         metrics.extend(_numeric_metrics_for_findings(bundle))
         metrics.extend(_business_metrics_for_findings(bundle))
         metrics.extend(_global_metrics_for_findings(bundle))
-        metrics.extend(_question_metrics_for_findings(bundle))
     metric_provenance: dict[str, ProvenanceRef] = {}
     for metric in metrics:
         reference = _metric_provenance(run, metric)
@@ -608,8 +573,6 @@ def run_visualization_improvement(
     )
     for split, bundle in bundles.items():
         for data in _chart_data_for_split(bundle):
-            _render_chart_data(run, bundle, data)
-        for data in _question_chart_data(bundle):
             _render_chart_data(run, bundle, data)
     if bundles:
         anchor_split = "public_test" if "public_test" in bundles else sorted(bundles)[0]

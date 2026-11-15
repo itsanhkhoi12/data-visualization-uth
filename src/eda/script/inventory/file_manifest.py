@@ -5,7 +5,7 @@ from pathlib import Path
 
 from common.contracts import SourceRecord
 from common.enums import SourceType, Status
-from common.paths import DatasetContext
+from common.paths import DatasetContext, is_benchmark_file
 from common.provenance import fingerprint_file
 
 IGNORED_NAMES = {".DS_Store", "Thumbs.db"}
@@ -49,7 +49,7 @@ def classify_source_type(path: Path) -> SourceType:
 
 
 def is_ignored(path: Path) -> bool:
-    if path.name in IGNORED_NAMES:
+    if path.name in IGNORED_NAMES or is_benchmark_file(path):
         return True
     if path.suffix.lower() in IGNORED_SUFFIXES:
         return True

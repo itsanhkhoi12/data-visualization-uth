@@ -1,6 +1,6 @@
-# EDA Data
+# Khám phá dữ liệu của 14 doanh nghiệp DataMate
 
-Dự án phân tích khám phá dữ liệu (Exploratory Data Analysis — EDA) cho các bộ dữ liệu bán hàng và vận hành. Pipeline đọc dữ liệu nguồn ở chế độ chỉ đọc, lập hồ sơ cấu trúc và chất lượng, phân tích thống kê và quan hệ, tạo biểu đồ, báo cáo cùng các kiểm tra QA có thể truy vết.
+Dự án khám phá dữ liệu bán hàng và vận hành của 14 doanh nghiệp, từ `dev_001` đến `dev_014` trong `public_test`. Notebook đi từ kiểm kê và độ phủ đến phân tích giá trị đơn của `dev_001` và đối chiếu nhịp bán giữa hai doanh nghiệp. Yêu cầu phân tích và thiết kế biểu đồ nằm trong [định nghĩa bài toán](docs/DEFINE-THE-PROBLEM.md).
 
 > **Dữ liệu nguồn:** toàn bộ `raw_data/` được `.gitignore` loại khỏi Git. Thư mục này cần được tạo/copy riêng trên từng máy; clone repository không tự tải dữ liệu.
 
@@ -21,7 +21,7 @@ Dự án phân tích khám phá dữ liệu (Exploratory Data Analysis — EDA) 
 - Git để lấy mã nguồn (nếu làm việc từ repository).
 - Dung lượng đĩa phù hợp với dữ liệu. Phân tích toàn bộ dữ liệu có thể cần nhiều RAM và thời gian.
 
-Các thư viện bên thứ ba được mã nguồn sử dụng trực tiếp: `matplotlib`, `openpyxl`, `nbformat`. Các module khác trong pipeline thuộc thư viện chuẩn Python. Cài thư viện trong virtual environment theo hướng dẫn bên dưới.
+Notebook và pipeline dùng `matplotlib`, `openpyxl`, `nbformat`, `pandas`, `seaborn` và `ipykernel`. Cài các thư viện trong môi trường ảo theo hướng dẫn bên dưới.
 
 ## Cấu trúc repository
 
@@ -52,9 +52,9 @@ EDA_Data/
 | `readers/` | Đọc CSV, Excel, JSONL, Markdown, SQLite, bảng và file nén. |
 | `profiling/`, `schema/` | Lập hồ sơ cột/nguồn, suy luận kiểu, tìm khóa và đánh giá quan hệ giữa bảng. |
 | `quality/` | Phân tích giá trị thiếu, trùng lặp, tính hợp lệ và toàn vẹn. |
-| `statistics/`, `temporal/` | Thống kê đơn biến/đa biến/liên kết và phân tích trường ngày, lịch, độ phủ thời gian. |
+| `eda_statistics/`, `temporal/` | Thống kê đơn biến/đa biến/liên kết và phân tích trường ngày, lịch, độ phủ thời gian. |
 | `business/`, `inventory/`, `cross_business/` | Chỉ số nghiệp vụ, tồn kho và tổng hợp giữa các đơn vị kinh doanh. |
-| `questions/`, `rulebook/` | Đối chiếu câu hỏi/đáp án và nạp, so sánh quy tắc nghiệp vụ. |
+| `rulebook/` | Nạp định nghĩa chỉ số và quy tắc nghiệp vụ. |
 | `visualization/`, `html_tables/` | Định nghĩa, dựng và xuất biểu đồ/bảng. |
 | `reporting/` | Tạo báo cáo, kết luận có dẫn chứng và đăng ký artifact. |
 | `validation/` | Các cổng QA, kiểm tra thống kê, hình ảnh, hash và hồi quy. |
@@ -87,7 +87,7 @@ Tạo và kích hoạt môi trường:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel
 ```
 
 ### Windows (PowerShell)
@@ -99,7 +99,7 @@ py -3 -m venv .venv
 Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel
 ```
 
 `Set-ExecutionPolicy -Scope Process` chỉ áp dụng cho cửa sổ PowerShell hiện tại. Nếu dùng Command Prompt thay vì PowerShell, kích hoạt bằng:
@@ -122,7 +122,7 @@ Tạo và kích hoạt môi trường:
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel
 ```
 
 Sau khi kích hoạt, dấu nhắc lệnh thường hiển thị `(.venv)`. Xác nhận Python đang dùng thuộc môi trường dự án:
@@ -147,19 +147,18 @@ raw_data/
 └── public_test/
     ├── rulebook.md
     ├── calendar.csv
-    ├── questions.jsonl
     └── data/
         ├── dev_001/
         ├── dev_002/
         └── ...
 ```
 
-Split `public_test` cần `rulebook.md`, `calendar.csv`, `questions.jsonl`. Đặt dữ liệu bảng trong `data/`, chia theo từng đơn vị/bộ dữ liệu (`dev_001` đến `dev_014`). Reader hỗ trợ các định dạng được triển khai trong `readers/`, gồm CSV, Excel, JSONL, Markdown, SQLite và file nén.
+Đầu vào phân tích gồm `rulebook.md`, `calendar.csv` và các thư mục doanh nghiệp trong `data/`. Pipeline bỏ qua các tệp hỏi đáp của cuộc thi nếu chúng có mặt trong bản sao cục bộ.
 
 Để thêm dữ liệu:
 
 1. Tạo/copy dữ liệu vào đúng `raw_data/public_test/data/<id>/`.
-2. Đặt hoặc cập nhật các file mô tả cấp split (`rulebook.md`, `calendar.csv`, `questions.jsonl`) tại `raw_data/public_test/`.
+2. Đặt các tệp tham chiếu (`rulebook.md` và `calendar.csv`) tại `raw_data/public_test/`.
 3. Giữ nguyên tên file, mã hóa và cấu trúc bảng cần thiết; không sửa trực tiếp dữ liệu gốc trong quá trình EDA. Pipeline được cấu hình `read_only=True`.
 4. Nếu nguồn dữ liệu có thông tin cá nhân, tài chính hoặc bí mật, chỉ lưu ở vị trí được phép và không đưa vào commit/chia sẻ.
 
@@ -189,7 +188,16 @@ python scripts/run_full.py
 
 Script chạy `run_eda` cho split `public_test`, sau đó in JSON tóm tắt gồm `run_id`, thời gian chạy, số biểu đồ, trạng thái và đường dẫn output. Pipeline mặc định đọc dữ liệu, dùng seed lấy mẫu cố định, và ghi artifact dưới `src/eda/artifacts/`.
 
-Notebook chính nằm ở `src/eda/notebook/eda.ipynb`. Mã nguồn có bộ dựng notebook trong `orchestration/notebook_builder.py`; notebook được tạo/cập nhật theo pipeline để giữ cùng nguồn dữ liệu và logic phân tích.
+Để xem bài phân tích của môn học, mở [eda.ipynb](src/eda/notebook/eda.ipynb) trong trình soạn thảo có hỗ trợ Jupyter, chọn kernel Python của `.venv` và chạy tất cả các ô theo thứ tự. Notebook tự chạy pipeline, trình bày bảng kiểm tra dữ liệu và xuất hai biểu đồ minh họa độ phân tán và nhịp bán sang `figures/course/` của lần chạy.
+
+Trong mục 10, dùng bảng kiểm tra để lần theo số dòng thiếu mã, số dòng trùng và số đơn hợp lệ. Đối chiếu ngưỡng IQR với hộp Q1–Q3 trên biểu đồ. Trong mục 11, chọn một thứ và chia số đơn của thứ đó cho số ngày lịch tương ứng trong các tháng chung. Cách kiểm tra này cho phép tái lập một cột trên biểu đồ từ bảng gốc.
+
+Để cập nhật cấu trúc hoặc lời giải thích của notebook, sửa `orchestration/notebook_builder.py` rồi chạy lại bộ dựng. Ví dụ trên PowerShell:
+
+```powershell
+$env:PYTHONPATH = 'src/eda/script'
+python -m orchestration.notebook_builder
+```
 
 ## Đầu ra
 
@@ -216,7 +224,7 @@ Artifact được sinh lại từ dữ liệu và mã nguồn. Tránh chỉnh s�
 | --- | --- |
 | `python` không được nhận diện trên Windows | Thử `py -3 --version`, rồi tạo môi trường bằng `py -3 -m venv .venv`. |
 | Không kích hoạt được venv trên PowerShell | Chạy `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` trong cửa sổ hiện tại, sau đó chạy lại lệnh kích hoạt. |
-| Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat`. |
+| Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat pandas seaborn ipykernel`. |
 | `raw_data root not found` | Chạy lệnh từ repository và kiểm tra `raw_data/` đã được tạo tại gốc. |
-| Báo thiếu split `public_test`, `rulebook.md`, `calendar.csv` hoặc `questions.jsonl` | Đối chiếu cấu trúc tại [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu), kiểm tra tên và vị trí file. |
+| Báo thiếu `public_test`, `rulebook.md` hoặc `calendar.csv` | Đối chiếu cấu trúc tại [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu), kiểm tra tên và vị trí file. |
 | Chạy lâu hoặc thiếu bộ nhớ | Kiểm tra kích thước dữ liệu và tài nguyên máy; pipeline xử lý toàn bộ 14 doanh nghiệp của public_test. |

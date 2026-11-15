@@ -4,8 +4,8 @@ from typing import Any, Mapping, Sequence
 
 from common.bundles import SplitBundle
 from common.enums import Status
-from statistics.categorical_association import crosstab_association
-from statistics.robust_stats import (
+from eda_statistics.categorical_association import crosstab_association
+from eda_statistics.robust_stats import (
     compute_robust_dispersion,
     iqr_outlier_masks,
     median_of,
