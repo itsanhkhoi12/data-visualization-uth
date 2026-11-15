@@ -119,6 +119,21 @@ def render_table(
         for candidate in observed:
             if candidate not in columns:
                 columns.append(candidate)
+    style_block = f"<style>{BASE_CSS}</style>" if include_css else ""
+    if not rows or not columns:
+        return RenderedTable(
+            table_id=spec.table_id,
+            html=(
+                style_block
+                + f'<div class="eda-table-wrap"><strong>{_escape(spec.title)}</strong>'
+                + '<p class="eda-table-empty">Không có dữ liệu cho bảng này.</p></div>'
+            ),
+            row_count=0,
+            column_count=len(columns),
+            truncated=False,
+            status=Status.PASS if columns else Status.NOT_APPLICABLE,
+            reason="no rows available" if columns else "no columns resolved",
+        )
     truncated = False
     if len(rows) > MAX_ROWS:
         rows = rows[:MAX_ROWS]
@@ -164,7 +179,6 @@ def render_table(
     caption_parts.append(
         f'<span class="eda-table-caption-note">{_escape(spec.caption)}</span>'
     )
-    style_block = f"<style>{BASE_CSS}</style>" if include_css else ""
     body = (
         f'<div class="eda-table-wrap"><table class="eda-table">'
         f'<caption>{"".join(caption_parts)}</caption>'
@@ -173,26 +187,6 @@ def render_table(
         f"</table></div>"
     )
     payload = style_block + body
-    if not columns:
-        return RenderedTable(
-            table_id=spec.table_id,
-            html=payload,
-            row_count=0,
-            column_count=0,
-            truncated=False,
-            status=Status.NOT_APPLICABLE,
-            reason="no columns resolved",
-        )
-    if not safe_rows:
-        return RenderedTable(
-            table_id=spec.table_id,
-            html=payload,
-            row_count=0,
-            column_count=len(columns),
-            truncated=False,
-            status=Status.PASS,
-            reason="no rows available",
-        )
     unsafe = any(
         _contains_markup(cell) for row in safe_rows for cell in row
     )

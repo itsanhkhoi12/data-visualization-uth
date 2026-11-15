@@ -210,16 +210,20 @@ def _validate_table_structure(
             column_count = int(payload.get("column_count", 0) or 0)
             html = str(payload.get("html", ""))
             has_table_tag = "<table" in html
-            ok = has_table_tag and column_count > 0
+            empty_notice = 'class="eda-table-empty"' in html
+            if row_count == 0:
+                ok = empty_notice and not has_table_tag
+            else:
+                ok = has_table_tag and column_count > 0
             checks.append(
                 ValidationCheck(
                     check_id=f"HTML-STRUCT-{table_id}-{scope}",
                     category="html_structure",
                     scope=f"{table_id}:{scope}",
-                    expected="bảng có thẻ table và ít nhất một cột",
+                    expected="bảng có dữ liệu có thẻ table, bảng rỗng có thông báo",
                     observed=(
                         f"rows={row_count}, columns={column_count}, "
-                        f"table_tag={has_table_tag}, "
+                        f"table_tag={has_table_tag}, empty_notice={empty_notice}, "
                         f"truncated={payload.get('truncated')}"
                     ),
                     status=Status.PASS if ok else Status.BLOCKED,

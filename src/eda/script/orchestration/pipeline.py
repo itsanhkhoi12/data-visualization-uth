@@ -702,15 +702,19 @@ def _numeric_chart_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
 def _render_charts(
     run: EdaRun, writer: ArtifactWriter
 ) -> None:
-    figure_root = run.output_root / FIGURE_ROOT_NAME
     for chart_id in sorted(run.frames.frames):
         spec = CHART_SPECS_BY_ID.get(chart_id)
         if spec is None:
             continue
+        variants: dict[tuple[str, str], int] = {}
         for frame in run.frames.for_chart(chart_id):
+            key = (frame.split, frame.business_id)
+            variant = variants.get(key, 0) + 1
+            variants[key] = variant
+            name = chart_id if variant == 1 else f"{chart_id}-{variant}"
             relative = (
                 f"{FIGURE_ROOT_NAME}/{run.run_id}/{frame.split}/"
-                f"{frame.business_id}/{chart_id}.png"
+                f"{frame.business_id}/{name}.png"
             )
             target = run.output_root / relative
             rendered = render_chart(frame.frame, spec, target)
@@ -722,9 +726,9 @@ def _render_charts(
                 "population_n": frame.population_n,
             }
             writer.write_json(
-                relative_path=f"chart_manifest/{run.run_id}/{frame.split}/{frame.business_id}/{chart_id}.json",
+                relative_path=f"chart_manifest/{run.run_id}/{frame.split}/{frame.business_id}/{name}.json",
                 payload=payload,
-                artifact_id=f"chart.{chart_id}.{frame.split}.{frame.business_id}",
+                artifact_id=f"chart.{name}.{frame.split}.{frame.business_id}",
                 artifact_kind="chart_manifest",
                 split=frame.split,
                 business_id=frame.business_id,
