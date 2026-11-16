@@ -1,222 +1,135 @@
-# EDA Data
+# Khám phá dữ liệu đa doanh nghiệp — Zalo AI Challenge 2026 (DataMate)
 
-Dự án phân tích khám phá dữ liệu (Exploratory Data Analysis — EDA) cho các bộ dữ liệu bán hàng và vận hành. Pipeline đọc dữ liệu nguồn ở chế độ chỉ đọc, lập hồ sơ cấu trúc và chất lượng, phân tích thống kê và quan hệ, tạo biểu đồ, báo cáo cùng các kiểm tra QA có thể truy vết.
+Bài tập lớn học phần **Trực quan hóa dữ liệu** nhằm khám phá mẫu hình vận hành, đặc trưng theo ngành nghề và biến động thời gian trên bộ dữ liệu gồm **44 doanh nghiệp** Việt Nam (giai đoạn **2025–2026**) từ Zalo AI Challenge 2026 — DataMate.
 
-> **Dữ liệu nguồn:** toàn bộ `raw_data/` được `.gitignore` loại khỏi Git. Thư mục này cần được tạo/copy riêng trên từng máy; clone repository không tự tải dữ liệu.
+> **Tài liệu định hướng cốt lõi:**
+> - Định nghĩa bài toán: [`docs/DEFINE-THE-PROBLEM.md`](docs/DEFINE-THE-PROBLEM.md)
+> - Nội dung môn học: [`docs/SUBJECT-CONTENT.md`](docs/SUBJECT-CONTENT.md)
+> - Lộ trình dự án: [`plan/PROJECT_ROADMAP.md`](plan/PROJECT_ROADMAP.md)
+
+---
 
 ## Mục lục
 
-- [Yêu cầu](#yêu-cầu)
-- [Cấu trúc repository](#cấu-trúc-repository)
-- [Cài đặt](#cài-đặt)
-- [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu)
-- [Chạy phân tích](#chạy-phân-tích)
-- [Đầu ra](#đầu-ra)
-- [Lưu ý dữ liệu và Git](#lưu-ý-dữ-liệu-và-git)
-- [Khắc phục sự cố](#khắc-phục-sự-cố)
+- [1. Nguyên tắc thiết kế & Phạm vi](#1-nguyên-tắc-thiết-kế--phạm-vi)
+- [2. Cấu trúc thư mục](#2-cấu-trúc-thư-mục)
+- [3. Cài đặt môi trường](#3-cài-đặt-môi-trường)
+- [4. Dữ liệu nguồn (`data/merged/`)](#4-dữ-liệu-nguồn-datamerged)
+- [5. Cách sử dụng & Chạy kiểm thử](#5-cách-sử-dụng--chạy-kiểm-thử)
+- [6. Chuẩn trực quan hóa & Lưu ý Git](#6-chuẩn-trực-quan-hóa--lưu-ý-git)
 
-## Yêu cầu
+---
 
-- Python **3.10 trở lên**.
-- Git để lấy mã nguồn (nếu làm việc từ repository).
-- Dung lượng đĩa phù hợp với dữ liệu. Phân tích toàn bộ dữ liệu có thể cần nhiều RAM và thời gian.
+## 1. Nguyên tắc thiết kế & Phạm vi
 
-Các thư viện bên thứ ba được mã nguồn sử dụng trực tiếp: `matplotlib`, `openpyxl`, `nbformat`. Các module khác trong pipeline thuộc thư viện chuẩn Python. Cài thư viện trong virtual environment theo hướng dẫn bên dưới.
+- **Đối tượng người xem & Hình thức nộp:** Giảng viên môn Trực quan hóa dữ liệu; trình bày bằng **Jupyter Notebook (`.ipynb`)** và **Slide thuyết trình** hoàn toàn bằng **tiếng Việt**.
+- **Tách biệt Notebook và Logic (`Thin Notebook`):** Các tệp trong [`notebooks/`](notebooks) **không cài đặt chi tiết kỹ thuật** (không viết hàm đọc tệp, làm sạch hay vẽ biểu đồ phức tạp trực tiếp trong cell); notebook chỉ trình bày mạch kể chuyện (*Bối cảnh → Vấn đề → Bằng chứng → Kết luận / Hành động*) và gọi các hàm sạch từ [`src/datamate_viz/`](src/datamate_viz).
+- **Công cụ sử dụng:** `Python`, `pandas`, `NumPy`, `matplotlib`, `seaborn` (xem [`requirements.txt`](requirements.txt)).
+- **Chuẩn chỉ số & Lịch:** Áp dụng thống nhất [`data/merged/rulebook.md`](data/merged/rulebook.md) (bản `public_test` mở rộng) và [`data/merged/calendar.csv`](data/merged/calendar.csv) cho âm lịch / kỳ Tết.
+- **Ngoài phạm vi:** Không dùng `questions.jsonl` và `answers.jsonl`; không triển khai mô hình ML/DL, dự báo, phân cụm, PCA/t-SNE/UMAP, Folium hay Plotly.
 
-## Cấu trúc repository
+---
+
+## 2. Cấu trúc thư mục
 
 ```text
-EDA_Data/
-├── .gitignore                  # Loại dữ liệu thô, môi trường ảo, cache và file cục bộ khỏi Git
-├── README.md                   # Tài liệu này
-├── raw_data/                   # Dữ liệu nguồn cục bộ; bị Git bỏ qua
-│   └── public_test/            # Tập dữ liệu EDA duy nhất (14 doanh nghiệp dev_001 đến dev_014)
-├── raw_data_hashes.json        # Manifest hash dữ liệu được dùng cho kiểm tra hồi quy public_test
-├── plan/                       # Kế hoạch và tài liệu thiết kế phân tích
-├── scripts/                    # Script khởi chạy pipeline và tiện ích kiểm tra biểu đồ
-│   ├── run_full.py             # Chạy pipeline trên public_test
-│   └── probe_charts.py         # Khảo sát dữ liệu/biểu đồ trong quá trình phát triển
-└── src/eda/
-    ├── notebook/
-    │   └── eda.ipynb           # Notebook EDA được pipeline tạo/cập nhật
-    ├── script/                 # Mã nguồn pipeline EDA
-    ├── tests/                  # Kiểm thử các thành phần và hợp đồng
-    └── artifacts/              # Báo cáo, biểu đồ, manifest và kết quả theo lần chạy
+data-visualization-uth/
+├── data/                            # Dữ liệu cục bộ (được .gitignore bỏ qua)
+│   ├── train/                       # Dữ liệu gốc split train (30 doanh nghiệp: biz_101–biz_130)
+│   ├── public_test/                 # Dữ liệu gốc split public_test (14 doanh nghiệp: dev_001–dev_014)
+│   └── merged/                      # Tập làm việc hợp nhất (44 doanh nghiệp, không chứa file QA)
+│       ├── business_index.csv       # Ánh xạ business_id → source_split (train / public_test)
+│       ├── calendar.csv             # Lịch dương / âm phục vụ phân tích dịp Tết
+│       ├── rulebook.md              # Chuẩn định nghĩa chỉ số thống nhất
+│       └── data/                    # 44 thư mục doanh nghiệp (biz_101..biz_130, dev_001..dev_014)
+├── docs/
+│   ├── DEFINE-THE-PROBLEM.md        # Định nghĩa bài toán & tiêu chuẩn đánh giá (tiếng Việt)
+│   └── SUBJECT-CONTENT.md           # Tổng hợp 3 chương bài giảng từ references/
+├── plan/
+│   ├── PROJECT_ROADMAP.md           # Lộ trình 4 giai đoạn & 24 tác vụ (T1.0–T4.2b)
+│   └── plan_detail/                 # Tài liệu kế hoạch chi tiết trước đây
+├── references/                      # Slide bài giảng gốc của môn học (.pptx)
+├── labs/                            # Các bài thực hành trên lớp (practice01–05.ipynb)
+├── src/
+│   ├── datamate_viz/                # Package chính của đồ án Trực quan hóa dữ liệu
+│   │   ├── config.py                # Đường dẫn chuẩn (data/merged/, outputs/) & bảng màu Schwabish
+│   │   ├── io/                      # Đọc dữ liệu chỉ đọc (README, CSV, XLSX, SQLite, calendar)
+│   │   ├── inventory/               # Giai đoạn 1: Kiểm kê 44 DN, phân ngành, granularity, độ phủ ngày
+│   │   ├── metrics/                 # Giai đoạn 2: Luật rulebook.md, quy đổi đơn vị, Tidy Data & IQR
+│   │   ├── analysis/                # Tổng hợp cho Hồi 1, Hồi 2 (từng DN), Hồi 3 (liên ngành)
+│   │   └── charts/                  # Hàm vẽ Matplotlib/Seaborn (theme, act1, act2, act3)
+│   └── eda/                         # [LEGACY] Pipeline EDA trước đây; giữ nguyên tham khảo, không chỉnh sửa
+├── notebooks/                       # Notebook kể chuyện (chỉ gọi hàm từ src/datamate_viz/)
+│   ├── 01_boi_canh_44_doanh_nghiep.ipynb   # Hồi 1: Bức tranh toàn cảnh 44 doanh nghiệp
+│   ├── 02_kham_pha_doanh_nghiep.ipynb      # Hồi 2: Phân tích sâu từng doanh nghiệp đại diện
+│   └── 03_doi_chieu_lien_nganh.ipynb       # Hồi 3: Đối chiếu liên ngành & Kết luận
+├── scripts/
+│   ├── build_inventory.py           # CLI chạy kiểm kê T1.1–T1.2
+│   └── export_figures.py            # CLI xuất toàn bộ ảnh dpi=300 cho slide (T4.1b)
+├── outputs/
+│   ├── tables/                      # Bảng kiểm kê, bảng chất lượng dữ liệu (CSV/Markdown)
+│   └── figures/                     # Ảnh biểu đồ tĩnh dpi=300 phục vụ slide thuyết trình
+├── tests/                           # Kiểm thử đơn vị cho config, readers, metrics & kiểm chứng dữ liệu
+├── agents/                          # Quy tắc và mẫu tài liệu làm việc
+└── requirements.txt                 # Danh sách thư viện Python của đồ án
 ```
 
-### Các nhóm mã nguồn chính trong `src/eda/script/`
+---
 
-| Thư mục | Vai trò |
-| --- | --- |
-| `common/` | Cấu hình, đường dẫn, kiểu dữ liệu chung, provenance và quy tắc an toàn đầu ra. `config.py` xác định `raw_data/` và thư mục artifact mặc định. |
-| `readers/` | Đọc CSV, Excel, JSONL, Markdown, SQLite, bảng và file nén. |
-| `profiling/`, `schema/` | Lập hồ sơ cột/nguồn, suy luận kiểu, tìm khóa và đánh giá quan hệ giữa bảng. |
-| `quality/` | Phân tích giá trị thiếu, trùng lặp, tính hợp lệ và toàn vẹn. |
-| `statistics/`, `temporal/` | Thống kê đơn biến/đa biến/liên kết và phân tích trường ngày, lịch, độ phủ thời gian. |
-| `business/`, `inventory/`, `cross_business/` | Chỉ số nghiệp vụ, tồn kho và tổng hợp giữa các đơn vị kinh doanh. |
-| `questions/`, `rulebook/` | Đối chiếu câu hỏi/đáp án và nạp, so sánh quy tắc nghiệp vụ. |
-| `visualization/`, `html_tables/` | Định nghĩa, dựng và xuất biểu đồ/bảng. |
-| `reporting/` | Tạo báo cáo, kết luận có dẫn chứng và đăng ký artifact. |
-| `validation/` | Các cổng QA, kiểm tra thống kê, hình ảnh, hash và hồi quy. |
-| `orchestration/` | Điều phối đọc dữ liệu, phân tích, trực quan hóa, báo cáo và notebook. |
+## 3. Cài đặt môi trường
 
-Các file điều phối quan trọng:
+Yêu cầu **Python 3.10 trở lên**. Tạo virtual environment tại thư mục gốc repository:
 
-- `common/config.py`: tìm gốc workspace, xác định đầu vào và đầu ra mặc định.
-- `orchestration/pipeline.py`: điều phối một lần chạy EDA.
-- `orchestration/analysis.py`: phân tích từng tập dữ liệu.
-- `orchestration/visualization_pipeline.py`: chuẩn bị dữ liệu và chạy quy trình biểu đồ.
-- `orchestration/notebook_builder.py`: xây dựng notebook theo cùng hợp đồng pipeline.
-
-## Cài đặt
-
-Mở terminal tại thư mục gốc repository (thư mục có `README.md`). Chọn nhóm lệnh phù hợp với hệ điều hành. Tạo môi trường ảo trước khi cài thư viện để không ảnh hưởng Python toàn hệ thống.
-
-### Linux
-
-Trên Ubuntu/Debian, nếu chưa có Python và `venv`:
-
-```bash
-sudo apt update
-sudo apt install python3 python3-venv python3-pip git
-```
-
-Tạo và kích hoạt môi trường:
+### Linux / macOS
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install -r requirements.txt
 ```
 
 ### Windows (PowerShell)
 
-Cài Python 3.10+ từ python.org hoặc Microsoft Store và bật tùy chọn thêm Python vào `PATH`. Mở PowerShell tại thư mục repository:
-
 ```powershell
 py -3 -m venv .venv
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
 .\.venv\Scripts\Activate.ps1
 python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python -m pip install -r requirements.txt
 ```
 
-`Set-ExecutionPolicy -Scope Process` chỉ áp dụng cho cửa sổ PowerShell hiện tại. Nếu dùng Command Prompt thay vì PowerShell, kích hoạt bằng:
+---
 
-```bat
-.venv\Scripts\activate.bat
-```
+## 4. Dữ liệu nguồn (`data/merged/`)
 
-### macOS
+Thư mục `data/` được loại trừ khỏi Git (xem [`.gitignore`](.gitignore)). Để chạy được mã nguồn trên máy mới:
 
-Cài Python 3.10+ từ python.org hoặc Homebrew (nếu đã cài Homebrew):
+1. Đặt hai bộ dữ liệu gốc vào `data/train/` và `data/public_test/`.
+2. Hợp nhất 44 thư mục doanh nghiệp vào `data/merged/data/`, sao chép `calendar.csv` và `rulebook.md` (từ `public_test`) vào `data/merged/`, loại bỏ `questions.jsonl`/`answers.jsonl`, và tạo `data/merged/business_index.csv` lưu `business_id`, `source_split`, `relative_path`.
+
+---
+
+## 5. Cách sử dụng & Chạy kiểm thử
+
+Chạy kiểm thử đơn vị để xác minh cấu hình, đường dẫn `data/merged/` và module đọc dữ liệu:
 
 ```bash
-brew install python
+pytest tests/ -v
 ```
 
-Tạo và kích hoạt môi trường:
+Kiểm tra nhanh CLI chuẩn bị kiểm kê và thư mục xuất ảnh:
 
 ```bash
-python3 -m venv .venv
-source .venv/bin/activate
-python -m pip install --upgrade pip
-python -m pip install matplotlib openpyxl nbformat
+python scripts/build_inventory.py
+python scripts/export_figures.py
 ```
 
-Sau khi kích hoạt, dấu nhắc lệnh thường hiển thị `(.venv)`. Xác nhận Python đang dùng thuộc môi trường dự án:
+Mở và chạy các notebook trình bày trong [`notebooks/`](notebooks) theo thứ tự từ `01` đến `03`.
 
-```bash
-python --version
-python -m pip --version
-```
+---
 
-Mỗi lần mở terminal mới, cần kích hoạt lại môi trường. Lệnh hủy kích hoạt trên cả ba hệ điều hành:
+## 6. Chuẩn trực quan hóa & Lưu ý Git
 
-```bash
-deactivate
-```
-
-## Chuẩn bị dữ liệu
-
-Pipeline mặc định tìm dữ liệu tại `raw_data/public_test` ở gốc repository. Cấu trúc thư mục chuẩn:
-
-```text
-raw_data/
-└── public_test/
-    ├── rulebook.md
-    ├── calendar.csv
-    ├── questions.jsonl
-    └── data/
-        ├── dev_001/
-        ├── dev_002/
-        └── ...
-```
-
-Split `public_test` cần `rulebook.md`, `calendar.csv`, `questions.jsonl`. Đặt dữ liệu bảng trong `data/`, chia theo từng đơn vị/bộ dữ liệu (`dev_001` đến `dev_014`). Reader hỗ trợ các định dạng được triển khai trong `readers/`, gồm CSV, Excel, JSONL, Markdown, SQLite và file nén.
-
-Để thêm dữ liệu:
-
-1. Tạo/copy dữ liệu vào đúng `raw_data/public_test/data/<id>/`.
-2. Đặt hoặc cập nhật các file mô tả cấp split (`rulebook.md`, `calendar.csv`, `questions.jsonl`) tại `raw_data/public_test/`.
-3. Giữ nguyên tên file, mã hóa và cấu trúc bảng cần thiết; không sửa trực tiếp dữ liệu gốc trong quá trình EDA. Pipeline được cấu hình `read_only=True`.
-4. Nếu nguồn dữ liệu có thông tin cá nhân, tài chính hoặc bí mật, chỉ lưu ở vị trí được phép và không đưa vào commit/chia sẻ.
-
-Tạo khung thư mục rỗng:
-
-Linux/macOS:
-
-```bash
-mkdir -p raw_data/public_test/data
-```
-
-Windows PowerShell:
-
-```powershell
-New-Item -ItemType Directory -Force raw_data/public_test/data
-```
-
-**Lưu ý:** `.gitignore` loại trừ toàn bộ `raw_data/`, nên Git không lưu thư mục rỗng hay dữ liệu bên trong. Clone repository không tải dữ liệu. Nếu người khác cần bộ dữ liệu, hãy phân phối qua kho dữ liệu được kiểm soát/quy trình nội bộ phù hợp, rồi đặt vào đúng cấu trúc trên. Không bỏ quy tắc ignore để commit dữ liệu thô.
-
-## Chạy phân tích
-
-Kích hoạt `.venv`, chuẩn bị `raw_data/public_test/`, rồi chạy từ thư mục gốc repository:
-
-```bash
-python scripts/run_full.py
-```
-
-Script chạy `run_eda` cho split `public_test`, sau đó in JSON tóm tắt gồm `run_id`, thời gian chạy, số biểu đồ, trạng thái và đường dẫn output. Pipeline mặc định đọc dữ liệu, dùng seed lấy mẫu cố định, và ghi artifact dưới `src/eda/artifacts/`.
-
-Notebook chính nằm ở `src/eda/notebook/eda.ipynb`. Mã nguồn có bộ dựng notebook trong `orchestration/notebook_builder.py`; notebook được tạo/cập nhật theo pipeline để giữ cùng nguồn dữ liệu và logic phân tích.
-
-## Đầu ra
-
-Mỗi lần chạy tạo một thư mục theo `run_id` trong `src/eda/artifacts/`. Tùy kết quả và các cổng kiểm tra, bên trong có thể gồm:
-
-- `reports/`: báo cáo tổng quan, nghiệp vụ, QA và bàn giao.
-- `figures/`: hình biểu đồ đã kết xuất.
-- `chart_manifest/`: manifest và dữ liệu mô tả biểu đồ.
-- `splits/`: kết quả phân tích theo từng split.
-- Các manifest/registry: cấu hình lần chạy, hash nguồn, danh mục artifact và sổ trạng thái kiểm tra.
-
-Artifact được sinh lại từ dữ liệu và mã nguồn. Tránh chỉnh sửa thủ công artifact; hãy cập nhật mã hoặc dữ liệu đầu vào rồi chạy lại.
-
-## Lưu ý dữ liệu và Git
-
-- `raw_data/` và `.venv/` đã được loại khỏi Git trong `.gitignore`.
-- Không đưa `.env`, thông tin đăng nhập, khóa hoặc dữ liệu nhạy cảm vào repository.
-- `raw_data_hashes.json` là manifest hiện có trong repository, dùng cho kiểm tra hash dữ liệu trong quy trình QA. Khi thay dữ liệu, xem xét cập nhật manifest theo quy trình dự án; manifest cũ không chứng minh dữ liệu hiện tại giống nguồn trước đây.
-- Không commit cache, file tạm hoặc đầu ra cục bộ ngoài quy ước dự án.
-
-## Khắc phục sự cố
-
-| Vấn đề | Cách xử lý |
-| --- | --- |
-| `python` không được nhận diện trên Windows | Thử `py -3 --version`, rồi tạo môi trường bằng `py -3 -m venv .venv`. |
-| Không kích hoạt được venv trên PowerShell | Chạy `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` trong cửa sổ hiện tại, sau đó chạy lại lệnh kích hoạt. |
-| Báo thiếu thư viện | Kích hoạt `.venv`, rồi chạy `python -m pip install matplotlib openpyxl nbformat`. |
-| `raw_data root not found` | Chạy lệnh từ repository và kiểm tra `raw_data/` đã được tạo tại gốc. |
-| Báo thiếu split `public_test`, `rulebook.md`, `calendar.csv` hoặc `questions.jsonl` | Đối chiếu cấu trúc tại [Chuẩn bị dữ liệu](#chuẩn-bị-dữ-liệu), kiểm tra tên và vị trí file. |
-| Chạy lâu hoặc thiếu bộ nhớ | Kiểm tra kích thước dữ liệu và tài nguyên máy; pipeline xử lý toàn bộ 14 doanh nghiệp của public_test. |
+- Mọi biểu đồ trong [`src/datamate_viz/charts/`](src/datamate_viz/charts) tuân thủ thang **Cleveland–McGill**, trục cột bắt đầu từ `0`, và **5 hướng dẫn thiết kế của Schwabish** (*Cho thấy dữ liệu, Giảm nhiễu/`despine`, Tiêu đề chủ động + Nhãn trực tiếp, Small multiples thay spaghetti, Bắt đầu từ màu xám*).
+- Ảnh phục vụ slide xuất qua `save_figure(..., dpi=300)` với `sns.set_context("talk")`.
+- Không commit `data/`, `.venv/`, file `.docx`/`.pptx`, hoặc khóa bí mật vào Git.
