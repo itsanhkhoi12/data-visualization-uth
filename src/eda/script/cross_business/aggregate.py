@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Sequence
+from typing import Any, Mapping, Sequence
 
 from business.business_inventory import BusinessProfile
 from common.enums import Status
@@ -95,21 +95,6 @@ def aggregate_business_profiles(
 
 
 def combine_global_profiles(
-    train: GlobalProfile | None = None,
-    public: GlobalProfile | None = None,
-    profiles: Mapping[str, GlobalProfile] | None = None,
+    profiles: Mapping[str, GlobalProfile],
 ) -> dict[str, Any]:
-    payload: dict[str, Any] = {}
-    if profiles:
-        for split, profile in profiles.items():
-            payload[split] = profile.to_dict()
-    else:
-        if train is not None:
-            payload["train"] = train.to_dict()
-        if public is not None:
-            payload["public_test"] = public.to_dict()
-    if len(payload) > 1:
-        payload["cross_split_boundary"] = (
-            "populations differ between splits; only metadata-level comparison is valid"
-        )
-    return payload
+    return {split: profile.to_dict() for split, profile in profiles.items()}

@@ -29,7 +29,6 @@ from quality.integrity import IntegrityEntry, profile_integrity
 from quality.missingness import MissingnessEntry, profile_missingness
 from quality.validity import ValidityEntry, profile_validity
 from questions.alignment import profile_question_alignment
-from questions.answer_profile import profile_train_answers
 from questions.question_profile import profile_questions, question_metadata_records
 from readers.table_reader import LoadedTable, load_table
 from rulebook.rule_registry import RuleRegistry, compile_rule_registry
@@ -421,16 +420,10 @@ def analyze_split(
     question_lengths = tuple(
         int(record["question_length_characters"]) for record in metadata
     )
-    answer_profile = None
-    if context.has_labels:
-        answer_profile = profile_train_answers(
-            context.require_labels(), context.questions_path, split
-        )
     alignment = profile_question_alignment(
         split=split,
         question_metadata=metadata,
         available_businesses=manifest.business_ids,
-        has_labels=context.has_labels,
     )
     notes: list[str] = []
     capped = [item for item in analyses if item.row_cap_applied]
@@ -463,7 +456,6 @@ def analyze_split(
         domain_diagnostics=tuple(diagnostics),
         metrics=tuple(metrics),
         question_profile=question_profile,
-        answer_profile=answer_profile,
         alignment=tuple(alignment),
         calendar=calendar,
         rule_registry=rule_registry,

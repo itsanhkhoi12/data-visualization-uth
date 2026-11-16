@@ -286,7 +286,6 @@ def question_rows(bundle: SplitBundle) -> list[dict[str, Any]]:
     profile = bundle.question_profile
     if not profile:
         return []
-    answer = bundle.answer_profile
     return [
         {
             "split": profile.split,
@@ -296,30 +295,28 @@ def question_rows(bundle: SplitBundle) -> list[dict[str, Any]]:
             "as_of_min": profile.as_of_min or "none",
             "as_of_max": profile.as_of_max or "none",
             "as_of_missing_count": profile.as_of_missing_count,
-            "label_access": "train_reference_available"
-            if answer is not None
-            else "no_labels_for_split",
+            "label_access": "no_labels_for_split",
             "status": profile.status,
         }
     ]
 
 
-def rule_diff_rows(report: Any) -> list[dict[str, Any]]:
-    if not report:
-        return []
+def rule_registry_rows(bundles: list[SplitBundle]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
-    for group in ("train_only", "public_only", "modified"):
-        for item in getattr(report, group):
+    for bundle in bundles:
+        registry = bundle.rule_registry
+        if registry is None:
+            continue
+        for rule in registry.rules:
             rows.append(
                 {
-                    "conflict_id": item.conflict_id,
-                    "section": item.section,
-                    "train_rule_id": item.train_rule_id or "none",
-                    "public_rule_id": item.public_rule_id or "none",
-                    "conflict_status": item.conflict_status,
-                    "kind": item.kind,
-                    "train_text": item.train_text or "none",
-                    "public_text": item.public_text or "none",
+                    "rule_id": rule.rule_id,
+                    "split": rule.split,
+                    "section": rule.section,
+                    "rule_label": rule.rule_label,
+                    "rule_text": rule.rule_text,
+                    "source_line": rule.source_line,
+                    "status": rule.status,
                 }
             )
     return rows

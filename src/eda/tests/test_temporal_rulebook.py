@@ -3,7 +3,6 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
-from rulebook.rule_diff import compare_rulebooks
 from rulebook.rule_registry import compile_rule_registry
 from temporal.calendar_registry import validate_calendar
 from temporal.coverage import (
@@ -18,31 +17,6 @@ def _rulebook(path: Path, body: str) -> None:
     path.write_text(body, encoding="utf-8")
 
 
-def test_t037_split_specific_rules_are_separated(tmp_path: Path) -> None:
-    train_path = tmp_path / "train_rulebook.md"
-    public_path = tmp_path / "public_rulebook.md"
-    _rulebook(
-        train_path,
-        "# Rules\n\n## Revenue\n\n| Rule | Description |\n|---|---|\n"
-        "| R-01 | Revenue sums line totals |\n",
-    )
-    _rulebook(
-        public_path,
-        "# Rules\n\n## Revenue\n\n| Rule | Description |\n|---|---|\n"
-        "| R-01 | Revenue sums line totals |\n"
-        "| R-02 | Public only rule |\n",
-    )
-    train = compile_rule_registry(train_path, "train", "h1")
-    public = compile_rule_registry(public_path, "public_test", "h2")
-    assert len(train.rules) == 1
-    assert len(public.rules) == 2
-    report = compare_rulebooks(train, public)
-    assert report.public_rule_count == 2
-    assert report.train_rule_count == 1
-    assert len(report.public_only) == 1
-    assert report.public_only[0].conflict_status == "PUBLIC_ONLY"
-
-
 def test_rule_registry_ids_are_split_scoped(tmp_path: Path) -> None:
     path = tmp_path / "rulebook.md"
     _rulebook(
@@ -50,8 +24,8 @@ def test_rule_registry_ids_are_split_scoped(tmp_path: Path) -> None:
         "# Rules\n\n## Revenue\n\n| Rule | Description |\n|---|---|\n"
         "| R-01 | Revenue sums line totals |\n",
     )
-    registry = compile_rule_registry(path, "train", "hash")
-    assert registry.rules[0].rule_id.startswith("train.")
+    registry = compile_rule_registry(path, "public_test", "hash")
+    assert registry.rules[0].rule_id.startswith("public_test.")
     assert registry.rule_by_id(registry.rules[0].rule_id) is not None
 
 
@@ -69,7 +43,7 @@ def _calendar(path: Path) -> Path:
 
 def test_t034_calendar_registry_validates(tmp_path: Path) -> None:
     path = _calendar(tmp_path / "calendar.csv")
-    registry = validate_calendar(path, "train")
+    registry = validate_calendar(path, "public_test")
     assert registry.row_count == 60
     assert registry.min_date == "2025-01-01"
     assert registry.status in {"PASS", "PARTIAL"}
@@ -92,8 +66,8 @@ def test_event_role_detection() -> None:
 def test_date_field_profile_reports_parse_failures() -> None:
     rows = [{"ngày đặt": "2025-01-01"}, {"ngày đặt": "not a date"}]
     profiles = profile_date_fields(
-        "train:biz_x:orders",
-        "train",
+        "public_test:biz_x:orders",
+        "public_test",
         "biz_x",
         "orders",
         rows,
@@ -108,8 +82,8 @@ def test_date_field_profile_reports_parse_failures() -> None:
 def test_time_coverage_counts_active_days() -> None:
     rows = [{"ngày đặt": "2025-01-01"}, {"ngày đặt": "2025-01-01"}]
     profiles = profile_date_fields(
-        "train:biz_x:orders",
-        "train",
+        "public_test:biz_x:orders",
+        "public_test",
         "biz_x",
         "orders",
         rows,

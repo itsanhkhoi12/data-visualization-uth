@@ -8,7 +8,6 @@ import pytest
 from business.business_inventory import build_business_profile
 from common.enums import Status
 from questions.alignment import profile_question_alignment
-from questions.answer_profile import profile_train_answers, public_answers_are_forbidden
 from questions.question_profile import (
     infer_intent,
     profile_questions,
@@ -46,7 +45,7 @@ def _write_questions(path: Path, count: int) -> None:
 def test_t043_question_profile_counts(tmp_path: Path) -> None:
     path = tmp_path / "questions.jsonl"
     _write_questions(path, 5)
-    profile = profile_questions(path, "train")
+    profile = profile_questions(path, "public_test")
     assert profile.question_count == 5
     assert profile.unique_id_count == 5
     assert profile.duplicate_id_count == 0
@@ -61,48 +60,14 @@ def test_question_metadata_records_are_split_scoped(tmp_path: Path) -> None:
     assert all("question_length_characters" in record for record in records)
 
 
-def test_t045_answer_type_counts_sum_to_total(tmp_path: Path) -> None:
-    questions = tmp_path / "questions.jsonl"
-    answers = tmp_path / "answers.jsonl"
-    _write_questions(questions, 4)
-    answers.write_text(
-        '{"id": "q0", "type": "number", "answer": 1}\n'
-        '{"id": "q1", "type": "string", "answer": "a"}\n'
-        '{"id": "q2", "type": "number", "answer": 2}\n'
-        '{"id": "q3", "type": "list", "answer": [1, 2]}\n',
-        encoding="utf-8",
-    )
-    profile = profile_train_answers(answers, questions, "train")
-    assert profile.answer_count == 4
-    assert sum(profile.type_distribution.values()) == 4
-    assert profile.unmatched_question_ids == 0
-
-
-def test_t044_public_answers_are_forbidden(tmp_path: Path) -> None:
-    from common.paths import DatasetContext
-
-    root = tmp_path / "public_test"
-    root.mkdir()
-    context = DatasetContext(
-        split="public_test",
-        root=root,
-        rulebook_path=root / "rulebook.md",
-        calendar_path=root / "calendar.csv",
-        questions_path=root / "questions.jsonl",
-        answers_path=None,
-    )
-    assert public_answers_are_forbidden(context) is True
-
-
 def test_alignment_flags_missing_business_source() -> None:
     entries = profile_question_alignment(
-        split="train",
+        split="public_test",
         question_metadata=[
             {"business_id": "biz_101", "intent_candidate": "revenue"},
             {"business_id": "biz_999", "intent_candidate": "revenue"},
         ],
         available_businesses=("biz_101",),
-        has_labels=True,
     )
     by_business = {entry.business_id: entry for entry in entries}
     assert by_business["biz_101"].status == Status.PASS
@@ -118,7 +83,7 @@ def test_intent_inference() -> None:
 def test_business_profile_without_readme_is_partial() -> None:
     profile = build_business_profile(
         business_id="biz_101",
-        split="train",
+        split="public_test",
         sources=(),
         readme_path=None,
         readme_hash="",

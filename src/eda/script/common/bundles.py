@@ -26,7 +26,6 @@ class SplitBundle:
     domain_diagnostics: tuple[Any, ...] = ()
     metrics: tuple[Any, ...] = ()
     question_profile: Any = None
-    answer_profile: Any = None
     alignment: tuple[Any, ...] = ()
     calendar: Any = None
     rule_registry: Any = None

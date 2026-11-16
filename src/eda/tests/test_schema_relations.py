@@ -13,10 +13,10 @@ from schema.type_inference import (
 from common.enums import ColumnType
 
 
-def _table(header, rows, source_id="train:biz_x:orders") -> LoadedTable:
+def _table(header, rows, source_id="public_test:biz_x:orders") -> LoadedTable:
     return LoadedTable(
         source_id=source_id,
-        split="train",
+        split="public_test",
         business_id="biz_x",
         object_name="orders",
         header=tuple(header),
@@ -28,32 +28,32 @@ def _table(header, rows, source_id="train:biz_x:orders") -> LoadedTable:
 
 def test_t018_same_looking_ids_with_different_grain_are_candidates() -> None:
     left = _table(["id"], [["1"], ["2"], ["3"]])
-    right = _table(["id"], [["1"], ["1"], ["2"]], "train:biz_x:lines")
-    evidence = profile_relation(left, right, ("id",), "train", "biz_x")
+    right = _table(["id"], [["1"], ["1"], ["2"]], "public_test:biz_x:lines")
+    evidence = profile_relation(left, right, ("id",), "public_test", "biz_x")
     assert evidence.status != "APPROVED"
     assert evidence.duplicate_key_right > 0
 
 
 def test_t019_orphans_are_counted() -> None:
     left = _table(["id"], [["1"], ["2"], ["3"], ["9"]])
-    right = _table(["id"], [["1"], ["2"]], "train:biz_x:lines")
-    evidence = profile_relation(left, right, ("id",), "train", "biz_x")
+    right = _table(["id"], [["1"], ["2"]], "public_test:biz_x:lines")
+    evidence = profile_relation(left, right, ("id",), "public_test", "biz_x")
     assert evidence.unmatched_left_rows == 2
     assert evidence.matched_rows == 2
 
 
 def test_t020_fanout_is_detected() -> None:
     left = _table(["id"], [["1"], ["2"]])
-    right = _table(["id"], [["1"], ["1"], ["1"], ["2"]], "train:biz_x:lines")
-    evidence = profile_relation(left, right, ("id",), "train", "biz_x")
+    right = _table(["id"], [["1"], ["1"], ["1"], ["2"]], "public_test:biz_x:lines")
+    evidence = profile_relation(left, right, ("id",), "public_test", "biz_x")
     assert evidence.fanout_factor == 2.0
     assert evidence.status != "APPROVED"
 
 
 def test_t021_payment_join_is_not_silently_approved() -> None:
     left = _table(["bill"], [["b1"], ["b2"]])
-    right = _table(["bill"], [["b1"], ["b2"]], "train:biz_x:payments")
-    evidence = profile_relation(left, right, ("bill",), "train", "biz_x")
+    right = _table(["bill"], [["b1"], ["b2"]], "public_test:biz_x:payments")
+    evidence = profile_relation(left, right, ("bill",), "public_test", "biz_x")
     assert evidence.relation_id
     assert evidence.fanout_factor > 0
 
@@ -85,7 +85,7 @@ def test_column_registry_records_units() -> None:
 
 def test_propose_key_pairs_matches_same_column_names() -> None:
     left = _table(["mã hóa đơn"], [["1"]])
-    right = _table(["mã hóa đơn"], [["1"]], "train:biz_x:lines")
+    right = _table(["mã hóa đơn"], [["1"]], "public_test:biz_x:lines")
     pairs = propose_key_pairs(left, right)
     assert ("mã hóa đơn", "mã hóa đơn") in pairs
 

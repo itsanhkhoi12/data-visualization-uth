@@ -52,7 +52,7 @@ def test_t051_injected_script_is_escaped() -> None:
     rows = [
         {
             "source_id": "<script>alert('x')</script>",
-            "split": "train",
+            "split": "public_test",
             "business_id": "biz_101",
             "source_type": "csv",
             "logical_path": "<img onerror=alert(1)>.csv",
@@ -114,7 +114,7 @@ def test_t051_table_accessibility_headers() -> None:
         [
             {
                 "source_id": "s",
-                "split": "train",
+                "split": "public_test",
                 "business_id": "b",
                 "source_type": "csv",
                 "logical_path": "a.csv",
@@ -157,7 +157,7 @@ def test_table_renderer_bounds_rows() -> None:
     rows = [
         {
             "source_id": f"s{index}",
-            "split": "train",
+            "split": "public_test",
             "business_id": "b",
             "source_type": "csv",
             "logical_path": "a.csv",

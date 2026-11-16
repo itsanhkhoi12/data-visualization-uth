@@ -12,8 +12,6 @@ SCIENCE_LIMITATIONS = (
     "file, sheet and table counts are source object counts and never represent "
     "transaction counts",
     "row counts are never summed across objects with different grains",
-    "train and public test populations differ, so only metadata-level comparison "
-    "is scientifically valid",
     "public test reference answers do not exist in this snapshot and were never "
     "accessed or inferred",
     "business domain classification relies on README vocabulary evidence only",
