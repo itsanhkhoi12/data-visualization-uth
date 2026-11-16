@@ -446,10 +446,14 @@ def _looks_like_metadata(text: str) -> bool:
 def _detect_header_index(rows: list[tuple[Any, ...]]) -> int:
     best_index = 0
     best_score = -1.0
+    best_filled = 0
     for index, row in enumerate(rows[:HEADER_PROBE_ROWS]):
-        score = _header_score(_row_texts(row))
-        if score > best_score:
+        texts = _row_texts(row)
+        score = _header_score(texts)
+        filled = sum(1 for text in texts if text)
+        if score > best_score + 1e-4 or (abs(score - best_score) <= 1e-4 and filled > best_filled):
             best_score = score
+            best_filled = filled
             best_index = index
     return best_index
 
