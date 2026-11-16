@@ -74,6 +74,22 @@ data-visualization-uth/
 └── requirements.txt                 # Danh sách thư viện Python của đồ án
 ```
 
+### Các nhóm mã nguồn chính trong `src/eda/script/`
+
+| Thư mục | Vai trò |
+| --- | --- |
+| `common/` | Cấu hình, đường dẫn, kiểu dữ liệu chung, provenance và quy tắc an toàn đầu ra. `config.py` xác định `raw_data/` và thư mục artifact mặc định. |
+| `readers/` | Đọc CSV, Excel, JSONL, Markdown, SQLite, bảng và file nén. |
+| `profiling/`, `schema/` | Lập hồ sơ cột/nguồn, suy luận kiểu, tìm khóa và đánh giá quan hệ giữa bảng. |
+| `quality/` | Phân tích giá trị thiếu, trùng lặp, tính hợp lệ và toàn vẹn. |
+| `eda_statistics/`, `temporal/` | Thống kê đơn biến/đa biến/liên kết và phân tích trường ngày, lịch, độ phủ thời gian. |
+| `business/`, `inventory/`, `cross_business/` | Chỉ số nghiệp vụ, tồn kho và tổng hợp giữa các đơn vị kinh doanh. |
+| `rulebook/` | Nạp định nghĩa chỉ số và quy tắc nghiệp vụ. |
+| `visualization/`, `html_tables/` | Định nghĩa, dựng và xuất biểu đồ/bảng. |
+| `reporting/` | Tạo báo cáo, kết luận có dẫn chứng và đăng ký artifact. |
+| `validation/` | Các cổng QA, kiểm tra thống kê, hình ảnh, hash và hồi quy. |
+| `orchestration/` | Điều phối đọc dữ liệu, phân tích, trực quan hóa, báo cáo và notebook. |
+
 ---
 
 ## 3. Cài đặt môi trường

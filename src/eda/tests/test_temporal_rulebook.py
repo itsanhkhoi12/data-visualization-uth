@@ -3,7 +3,9 @@ from __future__ import annotations
 from datetime import date
 from pathlib import Path
 
+from common.enums import ColumnType, SemanticType
 from rulebook.rule_registry import compile_rule_registry
+from schema.type_inference import infer_semantic_type, parse_date
 from temporal.calendar_registry import validate_calendar
 from temporal.coverage import (
     daily_counts_from_dates,
@@ -11,6 +13,14 @@ from temporal.coverage import (
     weekday_counts_from_dates,
 )
 from temporal.date_fields import detect_event_role, missing_periods, profile_date_fields
+
+
+def test_mixed_dates_and_timestamps_are_profiled_as_dates() -> None:
+    values = ["02/01/2025", "2025-01-03 00:00:00", "2025-01-04"]
+    candidate = infer_semantic_type("Ngày tháng", values, ColumnType.TEXT)
+    assert candidate.semantic_type == SemanticType.DATE
+    assert candidate.parse_failure_ratio == 0
+    assert parse_date(values[1]) == date(2025, 1, 3)
 
 
 def _rulebook(path: Path, body: str) -> None:

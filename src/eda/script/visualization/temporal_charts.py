@@ -54,7 +54,6 @@ def build_temporal_charts(context: BundleContext) -> list[ChartData]:
     charts.extend(_seasonality_chart(context))
     charts.extend(_missing_period_chart(context))
     charts.extend(_holiday_chart(context))
-    charts.extend(_as_of_chart(context))
     return charts
 
 
@@ -515,58 +514,6 @@ def _holiday_chart(context: BundleContext) -> list[ChartData]:
                 "caption": (
                     f"{len(labels)} cửa sổ lễ được đánh dấu từ calendar.csv của split; "
                     f"số bản ghi trung bình mỗi ngày của {business_id}."
-                )
-            },
-        )
-    ]
-
-
-def _as_of_chart(context: BundleContext) -> list[ChartData]:
-    profile = context.bundle.question_profile
-    if profile is None or not profile.as_of_min or not profile.as_of_max:
-        return []
-    daily, _ = _aggregate_by_business(context)
-    rows: list[str] = []
-    starts: list[float] = []
-    ends: list[float] = []
-    for business_id, counts in sorted(daily.items()):
-        if not counts:
-            continue
-        rows.append(business_id)
-        starts.append(float(date.fromisoformat(min(counts)).toordinal()))
-        ends.append(float(date.fromisoformat(max(counts)).toordinal()))
-    if not rows:
-        return []
-    rows.append("câu hỏi (as_of)")
-    starts.append(float(date.fromisoformat(profile.as_of_min).toordinal()))
-    ends.append(float(date.fromisoformat(profile.as_of_max).toordinal()))
-    return [
-        ChartData(
-            chart_id="TIME09",
-            split=context.split,
-            business_id="global",
-            kind="timeline",
-            payload={"rows": rows, "starts": starts, "ends": ends},
-            source_ids=tuple(
-                item.source_id
-                for item in _coverage_entries(context)
-            ),
-            population_n=len(rows),
-            sample_n=None,
-            method="question_as_of_versus_source_coverage",
-            unit="date",
-            denominator_label="nguồn có trường ngày và khoảng as_of của câu hỏi",
-            title="Phủ phạm vi ngày chốt dữ liệu của câu hỏi so với nguồn dữ liệu",
-            x_label="Ngày (theo số thứ tự lịch)",
-            y_label="Nguồn / phạm vi",
-            limitations=(
-                "as_of semantics follow the split rulebook",
-                "a question date outside the data window is a risk signal, not a proof",
-            ),
-            metadata={
-                "caption": (
-                    f"Khoảng as_of của câu hỏi {profile.as_of_min} → {profile.as_of_max} "
-                    f"so với khoảng phủ của {len(rows) - 1} nguồn."
                 )
             },
         )

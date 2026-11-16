@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any, Mapping, Sequence
 
 from common.enums import Status
+from common.provenance import fingerprint_bytes
 from validation.validation_contracts import ValidationCheck, ValidationLedger
 
 REMOTE_URL_PATTERN = re.compile(
@@ -60,6 +61,7 @@ def _validate_figure_files(
             continue
         payload = target.read_bytes()
         valid_signature = payload.startswith(PNG_SIGNATURE)
+        valid_hash = fingerprint_bytes(payload) == record.content_hash
         svg_path = record.svg_path
         svg_ok = True
         svg_detail = ""
@@ -77,12 +79,12 @@ def _validate_figure_files(
                 check_id=f"VIS-FILE-{record.figure_id}",
                 category="figure_export",
                 scope=record.figure_id,
-                expected="tệp PNG tồn tại, có chữ ký PNG hợp lệ và SVG đi kèm hợp lệ",
+                expected="tệp PNG có chữ ký và hash hợp lệ, SVG đi kèm hợp lệ",
                 observed=(
                     f"png_bytes={len(payload)}, "
-                    f"png_signature={valid_signature}, {svg_detail}"
+                    f"png_signature={valid_signature}, png_hash_matches={valid_hash}, {svg_detail}"
                 ),
-                status=Status.PASS if valid_signature and svg_ok else Status.BLOCKED,
+                status=Status.PASS if valid_signature and valid_hash and svg_ok else Status.BLOCKED,
                 detail="xuất khung hình offline không phụ thuộc mạng",
             )
         )
@@ -208,16 +210,20 @@ def _validate_table_structure(
             column_count = int(payload.get("column_count", 0) or 0)
             html = str(payload.get("html", ""))
             has_table_tag = "<table" in html
-            ok = has_table_tag and column_count > 0
+            empty_notice = 'class="eda-table-empty"' in html
+            if row_count == 0:
+                ok = empty_notice and not has_table_tag
+            else:
+                ok = has_table_tag and column_count > 0
             checks.append(
                 ValidationCheck(
                     check_id=f"HTML-STRUCT-{table_id}-{scope}",
                     category="html_structure",
                     scope=f"{table_id}:{scope}",
-                    expected="bảng có thẻ table và ít nhất một cột",
+                    expected="bảng có dữ liệu có thẻ table, bảng rỗng có thông báo",
                     observed=(
                         f"rows={row_count}, columns={column_count}, "
-                        f"table_tag={has_table_tag}, "
+                        f"table_tag={has_table_tag}, empty_notice={empty_notice}, "
                         f"truncated={payload.get('truncated')}"
                     ),
                     status=Status.PASS if ok else Status.BLOCKED,

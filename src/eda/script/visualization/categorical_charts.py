@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 from common.enums import Status
-from statistics.categorical_profile import build_categorical_profile, pareto_entries
+from eda_statistics.categorical_profile import build_categorical_profile, pareto_entries
 from visualization.chart_context import BundleContext, ColumnView
 from visualization.chart_data import ChartData
 

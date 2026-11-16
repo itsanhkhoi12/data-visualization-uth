@@ -5,7 +5,7 @@ from typing import Any, Sequence
 
 from common.enums import Status
 from schema.type_inference import parse_number
-from statistics.bivariate import pearson, spearman
+from eda_statistics.bivariate import pearson, spearman
 
 
 @dataclass(frozen=True)

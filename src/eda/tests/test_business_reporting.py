@@ -5,6 +5,7 @@ from pathlib import Path
 import pytest
 
 from business.business_inventory import BusinessProfile
+from business.business_chart_metrics import compute_business_metric_rows
 from business.domain_profiles import profile_business_domain
 from business.kpi_catalogue import build_kpi_catalogue
 from business.unit_mapping import validate_unit_mapping
@@ -12,6 +13,7 @@ from common.enums import Status
 from cross_business.aggregate import aggregate_business_profiles, combine_global_profiles
 from cross_business.schema_compare import compare_schemas, detect_field_role
 from common.contracts import ColumnProfile
+from readers.table_reader import LoadedTable
 from reporting.business_report import assemble_business_report
 from reporting.global_report import assemble_global_report
 
@@ -260,3 +262,46 @@ def test_detect_field_role_handles_unaccented_camel_case_headers() -> None:
 def test_detect_field_role_requires_token_boundaries() -> None:
     assert detect_field_role("cột ngẫu nhiên") is None
     assert detect_field_role("Mô tả sản phẩm") != "order_identifier"
+
+
+def test_revenue_deduplicates_lines_and_filters_entire_orders() -> None:
+    header = ("Mã đơn hàng", "Ngày", "Trạng thái", "Thành tiền")
+    rows = [
+        dict(zip(header, values))
+        for values in (
+            ("A", "01/05/2026", "Hoàn thành", 100),
+            ("A", "01/05/2026", "Hoàn thành", 100),
+            ("B", "01/05/2026", "Đã hủy đơn", 500),
+            ("C", "01/05/2026", "Hoàn thành", 40),
+            ("C", "01/05/2026", "Đã trả hàng", 50),
+            ("D", "01/05/2026", "Đang giao hàng", 20),
+            ("D", "", "", 30),
+            ("E", "01/05/2026", "Hoàn thành", None),
+            ("", "01/05/2026", "Hoàn thành", 900),
+        )
+    ]
+    table = LoadedTable("fixture", "public_test", "dev_001", "sales", header, rows, len(rows), False)
+    metrics = {row.metric_id: row for row in compute_business_metric_rows(table)}
+    assert metrics["BUS01"].payload["amounts"] == [100, 50]
+    assert metrics["BUS02"].payload["daily"] == {"2026-05-01": 150}
+    assert metrics["BUS02"].population_n == 2
+    assert metrics["BUS04"].population_n == 5
+
+
+def test_invoice_summary_uses_merchandise_value() -> None:
+    rows = [
+        {
+            "Mã hóa đơn": "A",
+            "Ngày tháng": "2026-05-01 00:00:00",
+            "Trạng thái đơn": "Xong",
+            "TongTien": 999,
+            "Giá trị hàng": 100,
+        }
+    ]
+    table = LoadedTable(
+        "fixture", "public_test", "dev_009", "danh_sach_hoa_don.csv",
+        tuple(rows[0]), rows, 1, False,
+    )
+    metrics = {row.metric_id: row for row in compute_business_metric_rows(table)}
+    assert metrics["BUS01"].payload["amounts"] == [100]
+    assert metrics["BUS02"].payload["daily"] == {"2026-05-01": 100}

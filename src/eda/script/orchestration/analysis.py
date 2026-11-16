@@ -28,20 +28,18 @@ from quality.findings import compile_findings
 from quality.integrity import IntegrityEntry, profile_integrity
 from quality.missingness import MissingnessEntry, profile_missingness
 from quality.validity import ValidityEntry, profile_validity
-from questions.alignment import profile_question_alignment
-from questions.question_profile import profile_questions, question_metadata_records
 from readers.table_reader import LoadedTable, load_table
 from rulebook.rule_registry import RuleRegistry, compile_rule_registry
 from schema.column_registry import ColumnRegistryEntry, build_column_registry
 from schema.key_candidates import KeyCandidate, best_key_candidate, find_candidate_keys
 from schema.relations import RelationEvidence, profile_relation, propose_key_pairs
 from schema.type_inference import is_blank, parse_date, parse_datetime
-from statistics.categorical import (
+from eda_statistics.categorical import (
     CategoricalProfileRequest,
     profile_categorical,
     top_k_with_others,
 )
-from statistics.numeric import NumericProfileRequest, profile_numeric
+from eda_statistics.numeric import NumericProfileRequest, profile_numeric
 from temporal.calendar_registry import CalendarRegistry, validate_calendar
 from temporal.coverage import (
     TemporalCoverage,
@@ -415,16 +413,6 @@ def analyze_split(
                 rule_registry=rule_registry,
             )
         )
-    question_profile = profile_questions(context.questions_path, split)
-    metadata = question_metadata_records(context.questions_path, split)
-    question_lengths = tuple(
-        int(record["question_length_characters"]) for record in metadata
-    )
-    alignment = profile_question_alignment(
-        split=split,
-        question_metadata=metadata,
-        available_businesses=manifest.business_ids,
-    )
     notes: list[str] = []
     capped = [item for item in analyses if item.row_cap_applied]
     if capped:
@@ -455,8 +443,6 @@ def analyze_split(
         findings=findings,
         domain_diagnostics=tuple(diagnostics),
         metrics=tuple(metrics),
-        question_profile=question_profile,
-        alignment=tuple(alignment),
         calendar=calendar,
         rule_registry=rule_registry,
         numeric_samples=numeric_samples,
@@ -465,8 +451,6 @@ def analyze_split(
         source_row_counts=source_row_counts,
         source_total_row_counts=source_total_row_counts,
         source_truncated=source_truncated,
-        question_metadata=tuple(metadata),
-        question_lengths=question_lengths,
         business_metrics=tuple(business_metrics),
         notes=tuple(notes),
     )

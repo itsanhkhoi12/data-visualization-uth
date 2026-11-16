@@ -22,13 +22,17 @@ PRELUDE_CODE = (
     "if str(SCRIPT_ROOT) not in sys.path:\n"
     "    sys.path.insert(0, str(SCRIPT_ROOT))\n"
     "\n"
-    "from IPython.display import HTML, Markdown, display\n"
+    "from IPython.display import HTML, Image, Markdown, display\n"
     "\n"
     "from common.config import load_config\n"
+    "from orchestration.notebook_builder import course_figure_limits\n"
     "from orchestration.pipeline import run_eda\n"
+    "from orchestration.study_examples import (\n"
+    "    load_order_studies, order_audit, order_value_figure, weekly_activity_figure,\n"
+    ")\n"
     "\n"
     "config = load_config()\n"
-    "run = run_eda(config)\n"
+    "run = run_eda(config, figure_limits=course_figure_limits())\n"
     "run.run_id\n"
 )
 
@@ -179,8 +183,8 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "Tương quan không phải quan hệ nhân quả; phép nối ứng viên chỉ được hiển thị "
         "để đánh giá rủi ro nhân bản, không dùng cho tính chỉ số.",
         tables=(("TBL12", "public_test"),),
-        charts=(("REL01", "public_test", 1), ("REL03", "public_test", 1), ("REL06", "public_test", 1),
-                ("REL07", "public_test", 1), ("REL08", "public_test", 1), ("REL09", "public_test", 1),
+        charts=(("REL03", "public_test", 1), ("REL06", "public_test", 1),
+                ("REL08", "public_test", 1), ("REL09", "public_test", 1),
                 ("REL10", "public_test", 1)),
         story_split="public_test",
         story_limit=2,
@@ -210,32 +214,45 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         "Doanh nghiệp thiếu điều kiện bị ghi trạng thái rõ ràng, không được thay bằng "
         "số liệu của doanh nghiệp khác để lấp chỗ trống.",
         tables=(("TBL13", "public_test"), ("TBL14", "public_test")),
-        charts=(("BUS01", "public_test", 2), ("BUS03", "public_test", 1), ("BUS05", "public_test", 1),
-                ("QUAL03", "public_test", 1)),
-        story_split="public_test",
-        story_limit=2,
     ),
     _section(
         "10",
-        "Hồ sơ câu hỏi người dùng Public Test",
-        "Khảo sát siêu dữ liệu câu hỏi trong tệp questions.jsonl của Public Test mà không truy cập đáp án.",
-        "Đặc trưng câu hỏi suy ra bằng luật văn phong và cấu trúc ngữ nghĩa câu hỏi.",
-        "Split Public Test không có đáp án tham chiếu theo quy định; nhãn ý định là quy tắc suy ra.",
-        tables=(("TBL15", "public_test"),),
-        charts=(("QNA01", "public_test", 1), ("QNA02", "public_test", 1)),
-        story_split="public_test",
-        story_limit=1,
+        "Giá trị đơn hàng và ngoại lệ tại dev_001",
+        "Giá trị tiền hàng điển hình của một đơn là bao nhiêu? Các đơn lớn nằm ở đâu trong phân phối?",
+        "Tại dev_001, khóa là mã đơn và doanh thu là tổng Thành tiền các dòng cùng đơn. "
+        "Tại dev_009, khóa là mã hóa đơn và doanh thu lấy từ Giá trị hàng. Bảng kiểm tra ghi "
+        "số dòng thiếu mã, dòng trùng y hệt và số đơn thiếu dữ liệu hoặc mâu thuẫn. "
+        "Giữ đơn hoàn thành và đang giao khi tính doanh thu. Xác định ngoại lệ ở cấp đơn bằng "
+        "hai ngưỡng Q1 − 1,5 × IQR và Q3 + 1,5 × IQR, với IQR = Q3 − Q1.",
+        "Dòng thiếu mã được loại khỏi phân tích đơn vì chưa thể xác minh thuộc đơn nào. "
+        "Cờ IQR dùng để kiểm tra lại chứng từ. Các đơn ngoài ngưỡng vẫn góp vào thống kê.",
+        extra_code=(
+            "studies = load_order_studies(config.split_root('public_test'))\n"
+            "case_figures = run.output_root / 'figures' / 'course'\n"
+            "display(order_audit(studies))\n"
+            "_, iqr_summary = order_value_figure(studies[0], case_figures)\n"
+            "display(iqr_summary.round(2))\n"
+            "display(Image(filename=str(case_figures / 'phan-phoi-gia-tri-don.png'), width=960))"
+        ),
     ),
     _section(
         "11",
-        "Phân tích đặc trưng câu hỏi Public Test",
-        "Trình bày phân bổ đặc trưng, từ khóa thời gian và cấu trúc câu hỏi của Public Test.",
-        "Thống kê từ khóa thời gian, độ dài ký tự và tỷ lệ câu hỏi trên tập Public Test.",
-        "Tập trung hoàn toàn vào câu hỏi của 14 doanh nghiệp Public Test; không có so sánh chéo với train.",
-        tables=(("TBL15", "public_test"),),
-        charts=(("QNA01", "public_test", 1), ("QNA03", "public_test", 1)),
-        story_split="public_test",
-        story_limit=1,
+        "Đối chiếu nhịp bán giữa dev_001 và dev_009",
+        "Số đơn hợp lệ trung bình trên từng thứ trong tuần thay đổi thế nào giữa hai doanh nghiệp?",
+        "Chọn hai nguồn có mã đơn, ngày và trạng thái đủ để xác định đơn hợp lệ, với hai cách ghi khác nhau. "
+        "Giữ các tháng mà mỗi ngày đều có ít nhất một đơn ghi nhận được ở cả hai nguồn. "
+        "Chia số đơn hợp lệ theo thứ cho số ngày lịch của thứ đó trong các tháng chung.",
+        "Mỗi cột luôn bắt đầu từ 0 và hai ô biểu đồ dùng chung thang đo. Kết quả mô tả hai doanh nghiệp "
+        "trong các tháng ghi dưới bảng.",
+        extra_code=(
+            "weekly_plot, weekly_summary = weekly_activity_figure(studies, case_figures)\n"
+            "if weekly_plot is None:\n"
+            "    display(Markdown('Hai doanh nghiệp chưa có tháng nào cùng đủ ngày quan sát.'))\n"
+            "else:\n"
+            "    display(Markdown('Các tháng đối chiếu: ' + weekly_summary.attrs['months']))\n"
+            "    display(weekly_summary.round(2))\n"
+            "    display(Image(filename=str(case_figures / 'nhip-ban-theo-thu.png'), width=960))"
+        ),
     ),
     _section(
         "12",
@@ -263,8 +280,7 @@ SECTIONS: tuple[dict[str, Any], ...] = (
     _section(
         "14",
         "Phân tích dữ liệu toàn cục",
-        "Đối chiếu mức độ bao phủ giữa các split và giữa các doanh nghiệp ở "
-        "mức siêu dữ liệu.",
+        "Kiểm tra mức độ bao phủ của 14 doanh nghiệp ở mức siêu dữ liệu.",
         "Tổng hợp số tệp, số doanh nghiệp, số worksheet, số đối tượng CSDL và "
         "số phát hiện chất lượng theo từng split.",
         "Số lượng đối tượng siêu dữ liệu không phải số giao dịch và không được "
@@ -301,6 +317,14 @@ SECTIONS: tuple[dict[str, Any], ...] = (
         story_limit=6,
     ),
 )
+
+
+def course_figure_limits() -> dict[str, int]:
+    limits: dict[str, int] = {}
+    for section in SECTIONS:
+        for chart_id, _, limit in section["charts"]:
+            limits[chart_id] = max(limits.get(chart_id, 0), limit)
+    return limits
 
 
 NOTEBOOK_METADATA = {
@@ -366,17 +390,15 @@ def build_notebook() -> nbformat.NotebookNode:
     cells: list[Any] = [
         nbformat.v4.new_markdown_cell(
             source=(
-                "# Phân tích khám phá dữ liệu khoa học — EDA tiếng Việt\n"
+                "# Khám phá dữ liệu vận hành của 14 doanh nghiệp\n"
                 "\n"
-                "Notebook này hiển thị kết quả phân tích khám phá dữ liệu theo "
-                "17 phần, kèm bảng bằng chứng, biểu đồ dựng từ registry và thẻ "
-                "chuyện khoa học 9 bước. Toàn bộ số liệu, hình ảnh và phát hiện "
-                "đều được tính trong các module Python dưới `src/eda/script`; "
-                "các ô mã ở đây chỉ gọi facade hiển thị.\n"
+                "Nguồn phân tích là bộ DataMate `public_test`. Bắt đầu từ các câu hỏi "
+                "về độ phủ và chất lượng của 14 doanh nghiệp, sau đó tìm hiểu phân phối "
+                "giá trị đơn ở dev_001 và đối chiếu nhịp bán với dev_009.\n"
                 "\n"
-                "Quy ước bất biến: nguồn dữ liệu thô chỉ được đọc; split Public "
-                "Test không có đáp án tham chiếu và không được truy cập, suy diễn "
-                "hay dựng nhãn; mọi biểu đồ không áp dụng đều ghi rõ lý do.\n"
+                "**Cách kiểm tra số liệu.** Xác định một dòng đại diện cho điều gì, "
+                "đọc README và rulebook, kiểm tra ngày và trạng thái, rồi mới gộp dòng "
+                "về mã đơn. Kết luận chỉ áp dụng cho các nguồn và kỳ được ghi trên biểu đồ.\n"
             )
         ),
         nbformat.v4.new_code_cell(source=PRELUDE_CODE),

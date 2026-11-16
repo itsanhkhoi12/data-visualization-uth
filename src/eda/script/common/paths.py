@@ -5,6 +5,12 @@ from pathlib import Path
 
 from common.errors import UnsafeOutputPath
 
+BENCHMARK_FILE_NAMES = frozenset({"questions.jsonl", "answers.jsonl"})
+
+
+def is_benchmark_file(path: Path) -> bool:
+    return path.name.casefold() in BENCHMARK_FILE_NAMES
+
 
 @dataclass(frozen=True)
 class DatasetContext:
@@ -12,7 +18,7 @@ class DatasetContext:
     root: Path
     rulebook_path: Path
     calendar_path: Path
-    questions_path: Path
+    questions_path: Path | None = None
     read_only: bool = True
 
     @property

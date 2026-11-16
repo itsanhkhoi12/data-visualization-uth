@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Sequence
 
-from statistics.robust_stats import median_of, quantile_of
+from eda_statistics.robust_stats import median_of, quantile_of
 
 METHOD_VERSION = "group_comparison.v1"
 MIN_GROUP_N = 5

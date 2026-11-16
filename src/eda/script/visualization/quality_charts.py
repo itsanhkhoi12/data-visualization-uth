@@ -5,7 +5,7 @@ from typing import Any
 
 from common.enums import Status
 from schema.type_inference import is_blank
-from statistics.missing_dependency import co_missing_matrix
+from eda_statistics.missing_dependency import co_missing_matrix
 from visualization.chart_context import BundleContext
 from visualization.chart_data import ChartData
 

@@ -1,6 +1,6 @@
 {
   "public_test/calendar.csv": "sha256:c2579905e8b4eb152a4833b05f1f72de3e3d2c517b5d610d7664aeeb2d6a75b3",
-  "public_test/data/dev_001/Danh sách hàng hóa.xlsx": "sha256:92ef8720f07501ae4a71b843169d75ffaf2af2a0ed465c64d11df77b50a6f6a5",
+  "public_test/data/dev_001/Danh sách hàng hóa.xlsx": "sha256:92ef8720f07501ae4a71b843169d75ffaf2af2a0ed465c64d11df77b50a6f6a5",
   "public_test/data/dev_001/README.md": "sha256:8e197003cef404f44a549d6840c4b136adaee1aaa0860156773ef6670df9c6db",
   "public_test/data/dev_001/So_chi_tiet_ban_hang.xlsx": "sha256:a26e9ff3da30989c60eb67be95aa059676f8118678349b9340d2083f0ae53cbc",
   "public_test/data/dev_002/BanHang_T10_2025.xlsx": "sha256:6aeb861d4351ad85d8e531eff7c5175c25781d48bc0c180fc2763a6799a678e3",
@@ -94,6 +94,5 @@
   "public_test/data/dev_014/SoBanHang.xlsx": "sha256:186c8e971ec3ea1140b6b907c3196f8728e331f3f28da6a73eb2698b43515b6b",
   "public_test/data/dev_014/SoNo.xlsx": "sha256:c2cb04fbf8aaea7f7345943cf0bb09dcaf10b47c73b78efd6ac58f958c416627",
   "public_test/data/dev_014/ThuMayCu.xlsx": "sha256:8c595175baf345cd1fd07417e1e7ea4449362466173797514c2d7ae48f6c1e99",
-  "public_test/questions.jsonl": "sha256:b33ae585ed5d4acdacbd6a2873d442e3a5673a8238b6e932827f40c48c158832",
   "public_test/rulebook.md": "sha256:959ebb63b709fad68f7e8a339cde955c96b6e9af2e48141db3ad5a2429510e10"
 }

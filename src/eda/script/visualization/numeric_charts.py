@@ -7,8 +7,8 @@ from profiling.semantic_eligibility import (
     continuous_density_eligibility,
     numeric_measure_eligibility,
 )
-from statistics.histogram_bins import build_bins, ecdf_series, kde_series
-from statistics.robust_stats import (
+from eda_statistics.histogram_bins import build_bins, ecdf_series, kde_series
+from eda_statistics.robust_stats import (
     compute_robust_dispersion,
     iqr_outlier_masks,
     quantile_profile,

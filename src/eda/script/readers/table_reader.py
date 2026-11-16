@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass
+from datetime import datetime
 from pathlib import Path
 from typing import Any
 
@@ -72,6 +74,23 @@ def load_excel_table(
 
     path = Path(record.absolute_path)
     header, rows = read_sheet_rows(path, sheet_name, max_rows=max_rows)
+    sheet_period = re.fullmatch(r"T(\d{1,2})-(\d{4})", sheet_name)
+    if (
+        record.business_id == "dev_014"
+        and path.name == "SoBanHang.xlsx"
+        and "Ngày" in header
+        and sheet_period is not None
+    ):
+        from openpyxl.utils.datetime import from_excel
+
+        month, year = map(int, sheet_period.groups())
+        for row in rows:
+            value = row.get("Ngày")
+            if type(value) not in (int, float) or not 1 <= value < 100_000:
+                continue
+            parsed = from_excel(value)
+            if isinstance(parsed, datetime) and (parsed.year, parsed.month) == (year, month):
+                row["Ngày"] = parsed.date()
     sheet_rows = sheet_row_count(path, sheet_name)
     header_index = detect_sheet_header_index(path, sheet_name)
     total = max(sheet_rows - header_index - 1, 0) if sheet_rows else None

@@ -5,7 +5,7 @@ from typing import Any, Mapping, Sequence
 
 from business.business_chart_metrics import BusinessMetricRow
 from common.enums import Status
-from statistics.histogram_bins import build_bins
+from eda_statistics.histogram_bins import build_bins
 from visualization.chart_context import BundleContext
 from visualization.chart_data import ChartData
 

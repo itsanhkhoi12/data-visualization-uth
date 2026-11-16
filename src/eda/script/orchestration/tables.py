@@ -282,25 +282,6 @@ def kpi_rows(bundle: SplitBundle) -> list[dict[str, Any]]:
     ]
 
 
-def question_rows(bundle: SplitBundle) -> list[dict[str, Any]]:
-    profile = bundle.question_profile
-    if not profile:
-        return []
-    return [
-        {
-            "split": profile.split,
-            "question_count": profile.question_count,
-            "unique_id_count": profile.unique_id_count,
-            "duplicate_id_count": profile.duplicate_id_count,
-            "as_of_min": profile.as_of_min or "none",
-            "as_of_max": profile.as_of_max or "none",
-            "as_of_missing_count": profile.as_of_missing_count,
-            "label_access": "no_labels_for_split",
-            "status": profile.status,
-        }
-    ]
-
-
 def rule_registry_rows(bundles: list[SplitBundle]) -> list[dict[str, Any]]:
     rows: list[dict[str, Any]] = []
     for bundle in bundles:
@@ -422,7 +403,6 @@ def bundle_tables(bundle: SplitBundle) -> dict[str, list[dict[str, Any]]]:
         "TBL12": relation_rows(bundle),
         "TBL13": business_profile_rows(bundle),
         "TBL14": kpi_rows(bundle),
-        "TBL15": question_rows(bundle),
         "TBL17": schema_compare_rows(bundle),
         "TBL19": findings_rows(bundle),
     }

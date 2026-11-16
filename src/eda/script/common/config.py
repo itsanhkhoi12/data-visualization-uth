@@ -59,19 +59,15 @@ class EdaConfig:
             raise SourceMissing(f"split root not found: {root}")
         rulebook = root / "rulebook.md"
         calendar = root / "calendar.csv"
-        questions = root / "questions.jsonl"
         if not rulebook.exists():
             raise SourceMissing(f"rulebook missing for split '{split}': {rulebook}")
         if not calendar.exists():
             raise SourceMissing(f"calendar missing for split '{split}': {calendar}")
-        if not questions.exists():
-            raise SourceMissing(f"questions missing for split '{split}': {questions}")
         return DatasetContext(
             split=split,
             root=root,
             rulebook_path=rulebook,
             calendar_path=calendar,
-            questions_path=questions,
             read_only=self.read_only,
         )
 

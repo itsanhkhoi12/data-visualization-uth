@@ -46,7 +46,6 @@ from orchestration.tables import (
     gate_ledger_rows,
     global_summary_rows,
     project_overview_rows,
-    rule_registry_rows,
 )
 from orchestration.visualization_pipeline import (
     VisualizationRun,
@@ -77,8 +76,6 @@ from visualization.chart_frames import (
     build_num01,
     build_num02,
     build_num04,
-    build_qna01,
-    build_qna03,
     build_tmp01,
     build_tmp03,
 )
@@ -121,7 +118,12 @@ class EdaRun:
         if table_id == "TBL01":
             return project_overview_rows(list(self.bundles.values()))
         if table_id == "TBL16":
-            return rule_registry_rows(list(self.bundles.values()))
+            return [
+                rule.to_dict()
+                for bundle in self.bundles.values()
+                if bundle.rule_registry is not None
+                for rule in bundle.rule_registry.rules
+            ]
         if table_id == "TBL18":
             return global_summary_rows(list(self.bundles.values()))
         if table_id == "TBL20":
@@ -284,7 +286,6 @@ def _table_is_split_scoped(table_id: str) -> bool:
         "TBL12",
         "TBL13",
         "TBL14",
-        "TBL15",
         "TBL17",
         "TBL19",
     }
@@ -584,24 +585,6 @@ def _build_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
                 [coverage.source_id for coverage in bundle.coverages],
             )
         )
-    profile = bundle.question_profile
-    if profile:
-        registry.add(
-            build_qna01(
-                bundle.split,
-                list(bundle.question_lengths),
-                profile.question_count,
-                [profile.split],
-            )
-        )
-        registry.add(
-            build_qna03(
-                bundle.split,
-                profile.time_expression_counts,
-                profile.question_count,
-                [profile.split],
-            )
-        )
     if bundle.coverages:
         business_ids = sorted(
             {coverage.business_id for coverage in bundle.coverages}
@@ -676,7 +659,7 @@ def _build_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
 
 
 def _numeric_chart_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
-    from statistics.numeric import empirical_cdf, histogram_bins
+    from eda_statistics.numeric import empirical_cdf, histogram_bins
 
     for source_id, columns in bundle.numeric_samples.items():
         business_id = ""
@@ -716,15 +699,19 @@ def _numeric_chart_frames(bundle: SplitBundle, registry: FrameRegistry) -> None:
 def _render_charts(
     run: EdaRun, writer: ArtifactWriter
 ) -> None:
-    figure_root = run.output_root / FIGURE_ROOT_NAME
     for chart_id in sorted(run.frames.frames):
         spec = CHART_SPECS_BY_ID.get(chart_id)
         if spec is None:
             continue
+        variants: dict[tuple[str, str], int] = {}
         for frame in run.frames.for_chart(chart_id):
+            key = (frame.split, frame.business_id)
+            variant = variants.get(key, 0) + 1
+            variants[key] = variant
+            name = chart_id if variant == 1 else f"{chart_id}-{variant}"
             relative = (
                 f"{FIGURE_ROOT_NAME}/{run.run_id}/{frame.split}/"
-                f"{frame.business_id}/{chart_id}.png"
+                f"{frame.business_id}/{name}.png"
             )
             target = run.output_root / relative
             rendered = render_chart(frame.frame, spec, target)
@@ -736,9 +723,9 @@ def _render_charts(
                 "population_n": frame.population_n,
             }
             writer.write_json(
-                relative_path=f"chart_manifest/{run.run_id}/{frame.split}/{frame.business_id}/{chart_id}.json",
+                relative_path=f"chart_manifest/{run.run_id}/{frame.split}/{frame.business_id}/{name}.json",
                 payload=payload,
-                artifact_id=f"chart.{chart_id}.{frame.split}.{frame.business_id}",
+                artifact_id=f"chart.{name}.{frame.split}.{frame.business_id}",
                 artifact_kind="chart_manifest",
                 split=frame.split,
                 business_id=frame.business_id,
@@ -764,6 +751,8 @@ def run_eda(
     config: EdaConfig | None = None,
     splits: Sequence[str] | None = None,
     run_id: str | None = None,
+    *,
+    figure_limits: Mapping[str, int] | None = None,
 ) -> EdaRun:
     config = config or load_config()
     resolved_run_id = run_id or _run_id(config)
@@ -887,16 +876,11 @@ def run_eda(
         gates.append(
             _gate(
                 "IMP-07",
-                f"question_metadata_{split}",
+                f"operating_data_scope_{split}",
                 Status.PASS,
-                (
-                    f"{bundle.question_profile.question_count} questions profiled"
-                    if bundle.question_profile
-                    else "no question profile"
-                )
-                + "; no reference answers for this split",
-                "orchestration.pipeline",
-                artifact="question_profile.json",
+                "inputs are business records, README files, the rulebook and calendar",
+                "inventory.file_manifest",
+                artifact="file_manifest.json",
             )
         )
     for split, registry in rule_registries.items():
@@ -929,9 +913,10 @@ def run_eda(
             )
         )
     frames = FrameRegistry()
-    for bundle in bundles.values():
-        _build_frames(bundle, frames)
-        _numeric_chart_frames(bundle, frames)
+    if figure_limits is None:
+        for bundle in bundles.values():
+            _build_frames(bundle, frames)
+            _numeric_chart_frames(bundle, frames)
     source_hashes = _source_hashes(bundles)
     rule_hash = _rule_hashes(bundles)
     config_hash = config.fingerprint()
@@ -1115,31 +1100,19 @@ def run_eda(
             qa_gate="IMP-06",
         )
         writer.write_json(
-            relative_path=f"splits/{split}/question_profile.json",
-            payload={
-                "question_profile": bundle.question_profile.to_dict()
-                if bundle.question_profile
-                else {},
-                "alignment": [item.to_dict() for item in bundle.alignment],
-                "rule_registry": bundle.rule_registry.to_dict()
-                if bundle.rule_registry
-                else {},
-            },
-            artifact_id=f"question_profile.{split}",
-            artifact_kind="questions",
+            relative_path=f"splits/{split}/rule_registry.json",
+            payload=bundle.rule_registry.to_dict(),
+            artifact_id=f"rule_registry.{split}",
+            artifact_kind="rulebook",
             split=split,
             business_id="__global__",
             source_id="",
-            method_name="questions.question_profile",
-            method_version="question_profile.v1",
-            population_size=bundle.question_profile.question_count
-            if bundle.question_profile
-            else 0,
-            observed_n=bundle.question_profile.question_count
-            if bundle.question_profile
-            else 0,
+            method_name="rulebook.rule_registry",
+            method_version="rule_registry.v1",
+            population_size=len(bundle.rule_registry.rules),
+            observed_n=len(bundle.rule_registry.rules),
             status=Status.PASS,
-            qa_gate="IMP-07",
+            qa_gate="IMP-08",
         )
         writer.write_json(
             relative_path=f"splits/{split}/global_summary.json",
@@ -1221,7 +1194,8 @@ def run_eda(
         rendered_tables={},
         global_report=global_report,
     )
-    _render_charts(run, writer)
+    if figure_limits is None:
+        _render_charts(run, writer)
     _prerender_tables(run, bundles)
     chart_validations = validate_all_chart_specs(CHART_CATALOGUE)
     writer.write_json(
@@ -1335,7 +1309,7 @@ def run_eda(
         )
     )
     visualization = run_visualization_improvement(
-        resolved_run_id, output_root, bundles, gates
+        resolved_run_id, output_root, bundles, gates, figure_limits=figure_limits
     )
     run.visualization = visualization
     run.story_cards = tuple(visualization.story_cards)
@@ -1493,17 +1467,12 @@ def run_eda(
             split: len(bundle.manifest.records) if bundle.manifest else 0
             for split, bundle in bundles.items()
         },
-        "question_counts": {
-            split: bundle.question_profile.question_count
-            if bundle.question_profile
-            else 0
-            for split, bundle in bundles.items()
-        },
         "chart_manifest_count": len(run.rendered_charts),
+        "figure_limits": dict(figure_limits) if figure_limits is not None else None,
         "table_spec_count": len(TABLE_CATALOGUE),
         "status": Status.PASS.value,
         "notes": [
-            "public test reference answers are absent and were never accessed",
+            "competition question and answer files are outside the EDA inputs",
             "row counts are source object counts and never transaction counts",
         ],
     }

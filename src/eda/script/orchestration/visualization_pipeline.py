@@ -51,6 +51,7 @@ class VisualizationRun:
     story_cards: list[StoryCard] = field(default_factory=list)
     provenance: dict[str, ProvenanceRef] = field(default_factory=dict)
     suppressed: list[dict[str, Any]] = field(default_factory=list)
+    figure_counts: dict[tuple[str, str, str], int] = field(default_factory=dict)
 
     def figures(self, chart_id: str) -> tuple[FigureRecord, ...]:
         return self.registry.figures_for_chart(chart_id)
@@ -92,15 +93,6 @@ def _chart_data_for_split(bundle: SplitBundle) -> list[ChartData]:
     charts.extend(build_temporal_charts(context))
     charts.extend(build_business_charts(context))
     charts.extend(build_global_charts(context))
-    return charts
-
-
-def _question_chart_data(bundle: SplitBundle) -> list[ChartData]:
-    from visualization.question_charts import build_question_charts
-
-    context = BundleContext(split=bundle.split, bundle=bundle)
-    charts: list[ChartData] = []
-    charts.extend(build_question_charts(context))
     return charts
 
 
@@ -165,7 +157,6 @@ def _chart_eligibility_matrix_chart(
         "REL",
         "TIME",
         "BUS",
-        "QNA",
         "GLOBAL",
     )
     requirements: dict[str, tuple[str, ...]] = {
@@ -176,7 +167,6 @@ def _chart_eligibility_matrix_chart(
         "REL": ("measure", "amount", "quantity", "categorical", "boolean"),
         "TIME": ("date", "datetime"),
         "BUS": ("measure", "amount", "quantity"),
-        "QNA": ("categorical", "boolean"),
         "GLOBAL": ("measure", "amount", "quantity", "categorical", "boolean"),
     }
     business_ids = sorted(
@@ -247,28 +237,20 @@ def _chart_eligibility_matrix_chart(
     ]
 
 
-def _relative_figure_path(
-    run_id: str, split: str, business_id: str, chart_id: str
-) -> str:
-    return f"{FIGURE_ROOT}/{run_id}/{split}/{business_id}/{chart_id}.png"
-
-
-def _relative_svg_path(
-    run_id: str, split: str, business_id: str, chart_id: str
-) -> str:
-    return f"{FIGURE_ROOT}/{run_id}/{split}/{business_id}/{chart_id}.svg"
-
-
 def _render_chart_data(
     run: VisualizationRun,
     bundle: SplitBundle,
     data: ChartData,
 ) -> FigureRecord:
     run.registry.add_chart_data(data)
-    relative = _relative_figure_path(run.run_id, data.split, data.business_id, data.chart_id)
-    svg_relative = _relative_svg_path(
-        run.run_id, data.split, data.business_id, data.chart_id
-    )
+    key = (data.split, data.business_id, data.chart_id)
+    variant = run.figure_counts.get(key, 0) + 1
+    run.figure_counts[key] = variant
+    name = data.chart_id if variant == 1 else f"{data.chart_id}-{variant}"
+    figure_id = f"{name}.{data.split}.{data.business_id}"
+    relative_stem = f"{FIGURE_ROOT}/{run.run_id}/analysis/{data.split}/{data.business_id}/{name}"
+    relative = f"{relative_stem}.png"
+    svg_relative = f"{relative_stem}.svg"
     png_target = run.output_root / relative
     svg_target = run.output_root / svg_relative
     try:
@@ -277,7 +259,7 @@ def _render_chart_data(
         rendered = None
         reason = f"render_failed:{type(error).__name__}"
         record = FigureRecord(
-            figure_id=f"{data.chart_id}.{data.split}.{data.business_id}",
+            figure_id=figure_id,
             chart_id=data.chart_id,
             split=data.split,
             business_id=data.business_id,
@@ -305,7 +287,7 @@ def _render_chart_data(
         svg_hash = f"sha256:{hashlib.sha256(svg_payload).hexdigest()}"
         svg_size = len(svg_payload)
     record = FigureRecord(
-        figure_id=rendered.figure_id,
+        figure_id=figure_id,
         chart_id=data.chart_id,
         split=data.split,
         business_id=data.business_id,
@@ -339,7 +321,7 @@ def _build_provenance(
         for source_id in record.source_ids:
             if source_id in by_id:
                 source_hashes.append(by_id[source_id])
-    artifact_id = f"figure.{record.chart_id}.{record.split}.{record.business_id}"
+    artifact_id = f"figure.{record.figure_id}"
     return ProvenanceRef(
         artifact_id=artifact_id,
         artifact_path=record.png_path,
@@ -362,7 +344,7 @@ def _numeric_metrics_for_findings(
     bundle: SplitBundle,
 ) -> list[EvidenceMetric]:
     from reporting.evidence_findings import metric_from_numeric_profile
-    from statistics.robust_stats import compute_robust_dispersion, iqr_outlier_masks
+    from eda_statistics.robust_stats import compute_robust_dispersion, iqr_outlier_masks
 
     metrics: list[EvidenceMetric] = []
     for entry in bundle.numeric_stats:
@@ -472,28 +454,6 @@ def _global_metrics_for_findings(bundle: SplitBundle) -> list[EvidenceMetric]:
     ]
 
 
-def _question_metrics_for_findings(bundle: SplitBundle) -> list[EvidenceMetric]:
-    from reporting.evidence_findings import metric_from_question_profile
-
-    profile = bundle.question_profile
-    if profile is None:
-        return []
-    return [
-        metric_from_question_profile(
-            metric_id=f"questions.{bundle.split}.profile",
-            split=bundle.split,
-            question_count=profile.question_count,
-            median_length=profile.length_characters_median,
-            intent_count=len(profile.intent_candidates),
-            time_expression_count=len(profile.time_expression_counts),
-            chart_id="QNA01",
-            limitations=(
-                "chỉ là siêu dữ liệu câu hỏi; không suy ra đáp án của câu hỏi",
-            ),
-        )
-    ]
-
-
 def _build_findings(
     run: VisualizationRun,
     bundles: Mapping[str, SplitBundle],
@@ -511,7 +471,6 @@ def _build_findings(
         metrics.extend(_numeric_metrics_for_findings(bundle))
         metrics.extend(_business_metrics_for_findings(bundle))
         metrics.extend(_global_metrics_for_findings(bundle))
-        metrics.extend(_question_metrics_for_findings(bundle))
     metric_provenance: dict[str, ProvenanceRef] = {}
     for metric in metrics:
         reference = _metric_provenance(run, metric)
@@ -599,21 +558,28 @@ def run_visualization_improvement(
     output_root: Path,
     bundles: Mapping[str, SplitBundle],
     gates: Sequence[Any] = (),
+    *,
+    figure_limits: Mapping[str, int] | None = None,
 ) -> VisualizationRun:
     run = VisualizationRun(
         run_id=run_id,
         output_root=output_root,
         registry=VisualizationRegistry(run_id=run_id),
     )
-    for split, bundle in bundles.items():
+    rendered_counts: dict[tuple[str, str], int] = {}
+    for bundle in bundles.values():
         for data in _chart_data_for_split(bundle):
-            _render_chart_data(run, bundle, data)
-        for data in _question_chart_data(bundle):
-            _render_chart_data(run, bundle, data)
+            key = (data.split, data.chart_id)
+            count = rendered_counts.get(key, 0)
+            if figure_limits is not None and count >= figure_limits.get(data.chart_id, 0):
+                continue
+            if _render_chart_data(run, bundle, data).status == Status.PASS:
+                rendered_counts[key] = count + 1
     if bundles:
         anchor_split = "public_test" if "public_test" in bundles else sorted(bundles)[0]
         for data in _gate_status_chart(gates) + _chart_eligibility_matrix_chart(bundles):
-            _render_chart_data(run, bundles[anchor_split], data)
+            if figure_limits is None or figure_limits.get(data.chart_id, 0):
+                _render_chart_data(run, bundles[anchor_split], data)
     run.eligibility = build_eligibility_ledger(run.registry.chart_data)
     _build_findings(run, bundles)
     _build_story_cards(run)

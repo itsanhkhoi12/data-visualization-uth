@@ -120,7 +120,7 @@ def build_kpi_catalogue(
                 denominator="explicit in rulebook",
                 filters=requirements,
                 status_handling="per split rulebook status policy",
-                as_of_semantics="as_of_date from questions.jsonl",
+                as_of_semantics="cutoff date of the observation window",
                 unit="VND" if "money" in metric_id or metric_id == "revenue" else "count",
                 rounding="per split rulebook",
                 null_behavior="excluded from denominator and reported",

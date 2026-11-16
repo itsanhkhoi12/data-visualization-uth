@@ -4,10 +4,10 @@ from typing import Any, Sequence
 
 from common.enums import Status
 from schema.join_eligibility import eligible_relations
-from statistics.association_profile import correlation_matrix, kendall_tau_b
-from statistics.categorical_association import crosstab_association
-from statistics.group_comparison import group_value_buckets
-from statistics.missing_dependency import co_missing_matrix
+from eda_statistics.association_profile import correlation_matrix, kendall_tau_b
+from eda_statistics.categorical_association import crosstab_association
+from eda_statistics.group_comparison import group_value_buckets
+from eda_statistics.missing_dependency import co_missing_matrix
 from schema.type_inference import is_blank, parse_number
 from visualization.chart_context import BundleContext, ColumnView, parse_numeric_rows
 from visualization.chart_data import ChartData
