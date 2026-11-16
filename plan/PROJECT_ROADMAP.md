@@ -2,30 +2,31 @@
 
 - **Motivation/Background**: Thiết lập kế hoạch thực hiện thống nhất cho đồ án nhóm môn Trực quan hóa dữ liệu, khám phá mẫu hình vận hành trên **14 doanh nghiệp** Việt Nam không đồng nhất từ tập `public_test` (`dev_001`–`dev_014`) của bộ dữ liệu Zalo AI Challenge 2026 — DataMate, đồng bộ với [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md) và [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md).
 - **Purpose**: Thống nhất các cột mốc, giai đoạn, sản phẩm đầu ra, quy tắc tính chỉ số và cổng kiểm soát chất lượng biểu đồ trước khi triển khai mã phân tích và vẽ biểu đồ.
-- **Overview Pipeline**: Dữ liệu chỉ đọc (`data/public_test/`) → Kiểm kê cấp độ bộ dữ liệu (14 doanh nghiệp) → Chọn tập đại diện & Làm sạch theo `rulebook.md`/Tidy Data → Phân tích mô tả từng doanh nghiệp & liên doanh nghiệp (*Khám phá → Giải thích*) → Bộ Notebook `.ipynb` & Slide thuyết trình tiếng Việt.
+- **Overview Pipeline**: Dữ liệu chỉ đọc (`data/public_test/` hoặc `raw_data/public_test/`) → Kiểm kê cấp độ bộ dữ liệu (14 doanh nghiệp) → Chọn tập đại diện & Làm sạch theo `rulebook.md`/Tidy Data → Phân tích mô tả từng doanh nghiệp & liên doanh nghiệp (*Khám phá → Giải thích*) → Bộ Notebook `.ipynb` & Slide thuyết trình tiếng Việt.
 - **Detailed Plan**: §1 Tổng quan dự án; §2 Các cột mốc chính; §3 Các giai đoạn triển khai; §4 Phân rã tác vụ & Phụ thuộc; §5 Rủi ro & Biện pháp giảm thiểu; §6 Theo dõi trạng thái.
 - **References**: [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md), [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md), [`data/public_test/rulebook.md`](../data/public_test/rulebook.md), [`data/public_test/calendar.csv`](../data/public_test/calendar.csv), [`.agents/templates/PROJECT_ROADMAP_TEMPLATE.md`](../.agents/templates/PROJECT_ROADMAP_TEMPLATE.md).
 - **Created**: 2026-11-14T00:36:45+07:00
-- **Last Updated**: 2026-11-16T14:43:53+07:00
+- **Last Updated**: 2026-11-16T18:48:45+07:00
 
 ---
 
 ## Tổng quan nhanh (At a Glance)
 
-**Tiến độ: `0 / 4` giai đoạn hoàn thành** — Đã cấu hình đọc trực tiếp `data/public_test/` (14 doanh nghiệp); đã chốt định nghĩa bài toán & nội dung môn học; sẵn sàng cho `T1.1a`.
+**Tiến độ: `0 / 4` giai đoạn hoàn thành** — Chưa có giai đoạn nào hoàn thành; các commit hiện tại trên [`src/eda/`](../src/eda) là phần refactor legacy code baseline. Sẵn sàng bắt đầu từ `T1.0`.
 
 ```
-█░░░░░░░░░░░░░░░   0/4 (đã xong T1.0)     █ = hoàn thành, ░ = còn lại
+░░░░░░░░░░░░░░░░   0/4 (0%)     █ = hoàn thành, ░ = còn lại
 ```
 
-1. **Giai đoạn 1: Khám phá & Kiểm kê cấp độ bộ dữ liệu** — Đã xong cấu hình `data/public_test/` (`T1.0` `[X]`); kiểm kê 14 doanh nghiệp (`dev_001`–`dev_014`: ngành nghề, hình thức ghi nhận, độ chi tiết, độ phủ thời gian, khoảng trống) & dựng biểu đồ Hồi 1 — `[~]`
+1. **Giai đoạn 1: Khám phá & Kiểm kê cấp độ bộ dữ liệu** — Chuẩn hóa cấu hình đọc `data/public_test/` hoặc `raw_data/public_test/`, kiểm kê 14 doanh nghiệp (`dev_001`–`dev_014`) & dựng biểu đồ Hồi 1 — `[ ]`
 2. **Giai đoạn 2: Chọn tập đại diện & Khám phá từng doanh nghiệp** — Chuẩn bị dữ liệu theo `rulebook.md`, Tidy Data & kiểm tra IQR; khám phá mẫu hình vận hành nội tại (Hồi 2) — `[ ]`
 3. **Giai đoạn 3: Đặc trưng vận hành liên doanh nghiệp** — Đối chiếu các chiều tương thích theo tỉ lệ & khung thời gian chung, biến động dịp Tết (Hồi 3) — `[ ]`
 4. **Giai đoạn 4: Hoàn thiện câu chuyện, `.ipynb` & Slide thuyết trình** — Kiểm định biểu đồ theo chuẩn Cleveland–McGill & 5 hướng dẫn Schwabish, hoàn thiện `.ipynb` và slide tiếng Việt — `[ ]`
 
-> Quy ước trạng thái: `[X]` hoàn thành · `[ ]` chưa bắt đầu · `[~]` đang thực hiện · `[!]` bị chặn
+> Quy ước trạng thái: `[X]` hoàn thành · `[ ]` chưa bắt đầu · `[~]` đang thực hiện · `[!]` bị chặn  
+> **Lưu ý baseline:** Toàn bộ thay đổi trong [`src/eda/`](../src/eda) tính tới commit `9e70cfb` (`Nam.14112026`, `Cuong15112026`) là **legacy code baseline** đã được dọn về `public_test`, chưa tính là hoàn thành bất kỳ giai đoạn nào của lộ trình kể chuyện 3 hồi.
 
-**Bước tiếp theo:** Thực hiện `T1.1a` (đọc và trích xuất thông tin từ toàn bộ 14 tệp `README.md` trong [`data/public_test/data/`](../data/public_test/data)).
+**Bước tiếp theo:** Thực hiện `T1.0` và `T1.1a` (xác nhận cấu hình đọc `data/public_test/` hoặc `raw_data/public_test/` và trích xuất thông tin từ toàn bộ 14 tệp `README.md`).
 
 ---
 
@@ -38,7 +39,7 @@
 | **Nhóm & phạm vi** | Đồ án nhóm; phân tích mô tả, trực quan hóa và kể chuyện bằng dữ liệu (*Bối cảnh → Vấn đề → Bằng chứng → Kết luận / Hành động*) |
 | **Ngôn ngữ trình bày** | **Tiếng Việt** (notebook `.ipynb`, tiêu đề/nhãn/chú thích biểu đồ và slide thuyết trình) |
 | **Sản phẩm chính** | Bộ Jupyter Notebook (`.ipynb`) + Slide thuyết trình |
-| **Phạm vi dữ liệu** | Chỉ đọc từ [`data/public_test/`](../data/public_test) gồm **14 doanh nghiệp** (`dev_001`–`dev_014`); **không sử dụng `train`** và **không dùng `data/merged/`** |
+| **Phạm vi dữ liệu** | Chỉ đọc từ [`data/public_test/`](../data/public_test) (hoặc `raw_data/public_test/`) gồm **14 doanh nghiệp** (`dev_001`–`dev_014`); **không sử dụng `train`** |
 | **Chuẩn chỉ số & lịch** | [`data/public_test/rulebook.md`](../data/public_test/rulebook.md) áp dụng thống nhất; [`data/public_test/calendar.csv`](../data/public_test/calendar.csv) để tra cứu âm lịch / kỳ Tết |
 | **Phương pháp luận** | Quy trình 7 bước Chương 2 ([`SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md)): *Khám phá → Giải thích*, Tidy Data, kiểm tra thiếu dữ liệu & ngoại lệ IQR, chuẩn hóa tỉ lệ |
 | **Công cụ kỹ thuật** | `Python`, `pandas`, `NumPy`, `matplotlib`, `seaborn` |
@@ -60,9 +61,9 @@
 ## 3. Các giai đoạn triển khai
 
 ### Giai đoạn 1 — Khám phá & Kiểm kê cấp độ bộ dữ liệu (Hồi 1: *Bối cảnh*)
-- **Mục tiêu:** Lập bản đồ toàn cảnh 14 doanh nghiệp trong [`data/public_test/data/`](../data/public_test/data) để phần Khám phá bộ dữ liệu trở thành Hồi 1 của câu chuyện và làm cơ sở chọn mẫu.
+- **Mục tiêu:** Lập bản đồ toàn cảnh 14 doanh nghiệp trong `data/public_test/` (hoặc `raw_data/public_test/`) để phần Khám phá bộ dữ liệu trở thành Hồi 1 của câu chuyện và làm cơ sở chọn mẫu.
 - **Đầu ra:**
-  - `T1.0` `[X]`: Cấu hình đọc trực tiếp [`data/public_test/`](../data/public_test) (14 doanh nghiệp `dev_001`–`dev_014`, [`calendar.csv`](../data/public_test/calendar.csv), [`rulebook.md`](../data/public_test/rulebook.md)), loại bỏ `data/merged/` và chặn đọc `questions.jsonl`.
+  - `T1.0` `[ ]`: Cấu hình đọc chỉ đọc `data/public_test/` hoặc `raw_data/public_test/` (14 doanh nghiệp `dev_001`–`dev_014`, `calendar.csv`, `rulebook.md`), bảo đảm chặn đọc `questions.jsonl`.
   - Bảng kiểm kê thống nhất: `business_id`, `industry` suy luận, `recording_format`, `granularity` (đơn+dòng hàng, chỉ đơn, chỉ mặt hàng), số tệp, số dòng, `min_date`–`max_date`, ngày cutoff và khoảng trống dữ liệu.
   - Biểu đồ tổng quan Hồi 1 bằng `matplotlib`/`seaborn` (cơ cấu ngành nghề, mức độ số hóa, dòng thời gian độ phủ dữ liệu, phân bố quy mô dòng).
 
@@ -95,7 +96,7 @@
 
 | Mã | Tác vụ | Trạng thái | Phụ thuộc | Đầu ra |
 |---|---|---|---|---|
-| `T1.0` | Cấu hình đọc chỉ đọc `data/public_test/` (14 doanh nghiệp) và xóa `data/merged/` | `[X]` | — | [`data/public_test/`](../data/public_test) |
+| `T1.0` | Cấu hình đọc chỉ đọc `data/public_test/` hoặc `raw_data/public_test/` (14 doanh nghiệp) | `[ ]` | — | Cấu hình nguồn dữ liệu & kiểm thử |
 | `T1.1a` | Đọc toàn bộ 14 tệp `README.md` (trích xuất hình thức ghi nhận, ngày cutoff, quy ước đơn vị/ghi tắt, mô tả bảng) | `[ ]` | `T1.0` | Bảng tổng hợp metadata từ `README` |
 | `T1.1b` | Quét toàn bộ tệp `.csv`, `.xlsx` (mọi sheet) và `.sqlite` của 14 doanh nghiệp để lấy tên bảng/sheet, cột và số dòng | `[ ]` | `T1.0` | Bảng cấu trúc tệp & số dòng |
 | `T1.1c` | Trích xuất `min_date`, `max_date`, số ngày/tháng có dữ liệu và khoảng trống thời gian của từng doanh nghiệp | `[ ]` | `T1.1b` | Bảng độ phủ & khoảng trống ngày |
@@ -145,11 +146,11 @@
 | **Ngày kết thúc dữ liệu khác nhau** (tháng 05–09/2026) & dữ liệu bị đứt quãng | Sai lệch xu hướng tháng hoặc ngộ nhận mùa vụ | Vẽ dòng thời gian độ phủ ngay ở Hồi 1 (`T1.3b`); chỉ đối chiếu theo cửa sổ thời gian giao nhau và loại tháng cuối thiếu ngày |
 | **Hiểu sai quy tắc `rulebook.md`** (tính nhầm đơn hủy/trả, quên quy đổi đơn vị, mã `Ghi tắt`) | Số liệu tính toán sai | Tập trung hóa logic `rulebook.md` trong module `T2.2a`–`T2.2b` và đối chiếu ngoại lệ IQR với dữ liệu gốc |
 | **Biểu đồ rối hoặc gây hiểu lầm** (spaghetti nhiều đường, cột cắt trục, quá nhiều màu/chú giải) | Giảm điểm đánh giá của giảng viên | Áp dụng cổng kiểm định `T4.1a` (5 hướng dẫn Schwabish + trục cột từ 0 + `context="talk"`) |
-| **Trượt phạm vi sang `train`, ML/DL hoặc thư viện ngoài phạm vi** | Sai yêu cầu dữ liệu hoặc loãng câu chuyện | Giữ chặt phạm vi: chỉ dùng `data/public_test/`, không `train`, không ML/DL, không Folium/Plotly, không dùng `questions.jsonl` |
+| **Trượt phạm vi sang `train`, ML/DL hoặc thư viện ngoài phạm vi** | Sai yêu cầu dữ liệu hoặc loãng câu chuyện | Giữ chặt phạm vi: chỉ dùng `data/public_test/` (hoặc `raw_data/public_test/`), không `train`, không ML/DL, không Folium/Plotly, không dùng `questions.jsonl` |
 
 ---
 
 ## 6. Theo dõi trạng thái
 
-- **Trạng thái hiện tại:** `[STATUS: ACTIVE]` — Đã chuyển phạm vi sang chỉ dùng `data/public_test/` (14 doanh nghiệp `dev_001`–`dev_014`), đồng bộ với [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md) và [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md); đã hoàn thành `T1.0`.
+- **Trạng thái hiện tại:** `[STATUS: ACTIVE]` — Chưa có giai đoạn nào hoàn thành (`0/4`); đã đồng bộ phạm vi `public_test` (14 doanh nghiệp `dev_001`–`dev_014`) và cấu trúc thư mục `data/` hoặc `raw_data/` với [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md) và [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md).
 - **Quy tắc cập nhật:** Cập nhật thanh tiến độ, bảng tác vụ và mốc `Last Updated` mỗi khi hoàn thành một cột mốc hoặc tác vụ.

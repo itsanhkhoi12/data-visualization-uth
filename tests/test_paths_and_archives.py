@@ -92,3 +92,20 @@ def test_resolve_source_rejects_escape(tmp_path: Path) -> None:
     with pytest.raises(UnsafeOutputPath):
         resolve_source(context, "../../escape.csv")
 
+
+def test_load_config_accepts_raw_data_or_data(tmp_path: Path) -> None:
+    from common.config import discover_workspace_root, load_config
+
+    (tmp_path / "src").mkdir()
+    data_dir = tmp_path / "data"
+    data_dir.mkdir()
+    assert discover_workspace_root(tmp_path / "src") == tmp_path.resolve()
+    assert load_config(tmp_path).raw_root == data_dir.resolve()
+    assert load_config(tmp_path, raw_root="data").raw_root == data_dir.resolve()
+
+    raw_dir = tmp_path / "raw_data"
+    raw_dir.mkdir()
+    assert load_config(tmp_path).raw_root == raw_dir.resolve()
+    assert load_config(tmp_path, raw_root="raw_data").raw_root == raw_dir.resolve()
+    assert load_config(tmp_path, raw_root=data_dir).raw_root == data_dir.resolve()
+

@@ -10,9 +10,9 @@ import pytest
 from common.enums import Status
 from common.provenance import fingerprint_file
 
-SCRIPT_ROOT = Path(__file__).resolve().parents[1] / "script"
-WORKSPACE_ROOT = Path(__file__).resolve().parents[3]
-RAW_ROOT = WORKSPACE_ROOT / "raw_data"
+WORKSPACE_ROOT = Path(__file__).resolve().parents[1]
+SCRIPT_ROOT = WORKSPACE_ROOT / "src"
+RAW_ROOT = WORKSPACE_ROOT / "raw_data" if (WORKSPACE_ROOT / "raw_data").is_dir() else WORKSPACE_ROOT / "data"
 
 LAYER_ORDER = (
     "common",
@@ -118,8 +118,11 @@ def test_t060_ledger_has_expected_business_counts() -> None:
 
 
 def test_t060_train_split_is_not_required() -> None:
-    train_root = RAW_ROOT / "train"
-    assert not train_root.exists()
+    from common.config import load_config
+    from common.enums import DatasetSplit
+
+    assert tuple(split.value for split in DatasetSplit) == ("public_test",)
+    assert load_config().splits == ("public_test",)
 
 
 def test_t060_public_test_has_no_answers_file() -> None:
@@ -214,9 +217,10 @@ def test_notebook_builder_declares_seventeen_sections() -> None:
 
 def test_public_test_only_architecture() -> None:
     from common.config import load_config
+    from common.enums import DatasetSplit
 
     config = load_config()
     assert config.splits == ("public_test",)
-    assert not (config.raw_root / "train").exists()
+    assert tuple(split.value for split in DatasetSplit) == ("public_test",)
     assert (config.raw_root / "public_test").is_dir()
 

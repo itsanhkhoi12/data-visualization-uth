@@ -1,7 +1,8 @@
 # Dataset goc va du lieu nhay cam
 /raw_data/
-/src/eda/artifacts/
-data/
+/artifacts/
+public_test/
+train/
 *.docx
 *.pptx
 

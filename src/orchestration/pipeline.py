@@ -1254,7 +1254,7 @@ def run_eda(
     )
     notebook_status = Status.PASS
     notebook_reason = "notebook is generated from the same orchestration contract"
-    notebook_path = config.workspace_root / "src" / "eda" / "notebook" / "eda.ipynb"
+    notebook_path = config.workspace_root / "notebook" / "eda.ipynb"
     if not notebook_path.exists():
         notebook_status = Status.BLOCKED
         notebook_reason = "notebook file is missing"
@@ -1265,7 +1265,7 @@ def run_eda(
             notebook_status,
             notebook_reason,
             "orchestration.notebook_builder",
-            artifact="src/eda/notebook/eda.ipynb",
+            artifact="notebook/eda.ipynb",
         )
     )
     gates.append(
