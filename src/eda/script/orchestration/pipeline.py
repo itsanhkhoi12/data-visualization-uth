@@ -1205,9 +1205,13 @@ def run_eda(
             qa_gate="IMP-08",
         )
     combined = None
-    if "train" in bundles and "public_test" in bundles:
+    if len(bundles) > 1 and "train" in bundles and "public_test" in bundles:
         combined = combine_global_profiles(
             bundles["train"].global_profile, bundles["public_test"].global_profile
+        )
+        total_biz = (
+            combined["train"]["business_count"]
+            + combined["public_test"]["business_count"]
         )
         writer.write_json(
             relative_path=GLOBAL_SUMMARY_NAME,
@@ -1219,27 +1223,46 @@ def run_eda(
             source_id="",
             method_name="cross_business.aggregate",
             method_version="aggregate.v1",
-            population_size=combined["train"]["business_count"]
-            + combined["public_test"]["business_count"],
-            observed_n=combined["train"]["business_count"]
-            + combined["public_test"]["business_count"],
+            population_size=total_biz,
+            observed_n=total_biz,
+            status=Status.PASS,
+            qa_gate="IMP-09",
+        )
+    elif bundles:
+        active_profiles = {s: b.global_profile for s, b in bundles.items()}
+        combined = combine_global_profiles(profiles=active_profiles)
+        anchor_bundle = bundles.get("public_test") or next(iter(bundles.values()))
+        total_biz = anchor_bundle.global_profile.business_count
+        writer.write_json(
+            relative_path=GLOBAL_SUMMARY_NAME,
+            payload=combined,
+            artifact_id=f"global_summary.{anchor_bundle.split}",
+            artifact_kind="reporting",
+            split=anchor_bundle.split,
+            business_id="__global__",
+            source_id="",
+            method_name="cross_business.aggregate",
+            method_version="aggregate.v1",
+            population_size=total_biz,
+            observed_n=total_biz,
             status=Status.PASS,
             qa_gate="IMP-09",
         )
     global_report = None
-    if "train" in bundles:
+    anchor_bundle = bundles.get("public_test") or (next(iter(bundles.values())) if bundles else None)
+    if anchor_bundle is not None:
         scientific_conclusions = derive_scientific_conclusions(
-            bundles["train"].global_profile,
-            bundles["train"].business_reports,
+            anchor_bundle.global_profile,
+            anchor_bundle.business_reports,
             extra_evidence={
-                "relation_candidate_count": len(bundles["train"].relations),
-                "date_field_count": len(bundles["train"].date_profiles),
-                "metric_definition_count": len(bundles["train"].metrics),
+                "relation_candidate_count": len(anchor_bundle.relations),
+                "date_field_count": len(anchor_bundle.date_profiles),
+                "metric_definition_count": len(anchor_bundle.metrics),
             },
         )
         global_report = assemble_global_report(
-            bundles["train"].global_profile,
-            bundles["train"].business_reports,
+            anchor_bundle.global_profile,
+            anchor_bundle.business_reports,
             conclusions=[item.claim for item in scientific_conclusions],
             scientific_conclusions=scientific_conclusions,
         )
@@ -1248,13 +1271,13 @@ def run_eda(
             payload=global_report.to_dict(),
             artifact_id="global_report",
             artifact_kind="reporting",
-            split="train",
+            split=anchor_bundle.split,
             business_id="__global__",
             source_id="",
             method_name="reporting.global_report",
             method_version="global_report.v1",
-            population_size=bundles["train"].global_profile.business_count,
-            observed_n=len(bundles["train"].business_reports),
+            population_size=anchor_bundle.global_profile.business_count,
+            observed_n=len(anchor_bundle.business_reports),
             status=global_report.status,
             qa_gate="IMP-13",
         )

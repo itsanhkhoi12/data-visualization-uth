@@ -18,6 +18,7 @@ LAYER_ORDER = (
     "readers",
     "inventory",
     "schema",
+    "profiling",
     "quality",
     "statistics",
     "temporal",
@@ -25,9 +26,10 @@ LAYER_ORDER = (
     "business",
     "questions",
     "cross_business",
-    "reporting",
     "visualization",
     "html_tables",
+    "validation",
+    "reporting",
     "orchestration",
 )
 
@@ -100,19 +102,18 @@ def test_no_comments_or_docstrings_in_source() -> None:
 
 
 def test_t060_ledger_has_expected_business_counts() -> None:
-    train_root = RAW_ROOT / "train" / "data"
     public_root = RAW_ROOT / "public_test" / "data"
-    if not train_root.exists() or not public_root.exists():
+    if not public_root.exists():
         pytest.skip("raw data not available")
-    train_businesses = sorted(
-        path.name for path in train_root.iterdir() if path.is_dir()
-    )
     public_businesses = sorted(
         path.name for path in public_root.iterdir() if path.is_dir()
     )
-    assert len(train_businesses) == 30
     assert len(public_businesses) == 14
-    assert len(train_businesses) + len(public_businesses) == 44
+
+
+def test_t060_train_split_is_not_required() -> None:
+    train_root = RAW_ROOT / "train"
+    assert not train_root.exists()
 
 
 def test_t060_public_test_has_no_answers_file() -> None:
@@ -168,3 +169,13 @@ def test_notebook_builder_declares_seventeen_sections() -> None:
     assert [section["id"] for section in SECTIONS] == [
         f"{index:02d}" for index in range(17)
     ]
+
+
+def test_public_test_only_architecture() -> None:
+    from common.config import load_config
+
+    config = load_config()
+    assert config.splits == ("public_test",)
+    assert not (config.raw_root / "train").exists()
+    assert (config.raw_root / "public_test").is_dir()
+

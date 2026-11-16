@@ -146,6 +146,16 @@ def test_combine_global_profiles_keeps_boundary_statement() -> None:
     assert combined["public_test"]["business_count"] == 1
 
 
+def test_combine_global_profiles_single_split() -> None:
+    public = aggregate_business_profiles(
+        "public_test", (_profile("dev_001"),), (), 1, 1
+    )
+    combined = combine_global_profiles(profiles={"public_test": public})
+    assert "public_test" in combined
+    assert combined["public_test"]["business_count"] == 1
+    assert "cross_split_boundary" not in combined
+
+
 def test_t047_same_name_different_grain_is_not_comparable() -> None:
     profiles = (
         ColumnProfile(

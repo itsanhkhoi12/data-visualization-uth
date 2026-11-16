@@ -95,12 +95,21 @@ def aggregate_business_profiles(
 
 
 def combine_global_profiles(
-    train: GlobalProfile, public: GlobalProfile
+    train: GlobalProfile | None = None,
+    public: GlobalProfile | None = None,
+    profiles: Mapping[str, GlobalProfile] | None = None,
 ) -> dict[str, Any]:
-    return {
-        "train": train.to_dict(),
-        "public_test": public.to_dict(),
-        "cross_split_boundary": (
+    payload: dict[str, Any] = {}
+    if profiles:
+        for split, profile in profiles.items():
+            payload[split] = profile.to_dict()
+    else:
+        if train is not None:
+            payload["train"] = train.to_dict()
+        if public is not None:
+            payload["public_test"] = public.to_dict()
+    if len(payload) > 1:
+        payload["cross_split_boundary"] = (
             "populations differ between splits; only metadata-level comparison is valid"
-        ),
-    }
+        )
+    return payload
