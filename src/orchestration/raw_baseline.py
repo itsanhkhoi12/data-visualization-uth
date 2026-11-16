@@ -7,8 +7,8 @@ from pathlib import Path
 from common.paths import is_benchmark_file
 from common.provenance import fingerprint_file
 
-WORKSPACE_ROOT = Path(__file__).resolve().parents[4]
-RAW_ROOT = WORKSPACE_ROOT / "raw_data"
+WORKSPACE_ROOT = Path(__file__).resolve().parents[2]
+RAW_ROOT = WORKSPACE_ROOT / "raw_data" if (WORKSPACE_ROOT / "raw_data").is_dir() else WORKSPACE_ROOT / "data"
 BASELINE_PATH = WORKSPACE_ROOT / "raw_data_hashes.json"
 
 

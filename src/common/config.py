@@ -72,24 +72,44 @@ class EdaConfig:
         )
 
 
+RAW_ROOT_CANDIDATES = ("raw_data", "data")
+
+
+def _resolve_raw_root(root: Path, raw_root: Path | str | None = None) -> Path:
+    if raw_root is not None:
+        candidate = Path(raw_root)
+        resolved = (candidate if candidate.is_absolute() else root / candidate).resolve()
+        if not resolved.is_dir():
+            raise SourceMissing(f"raw_data root not found: {resolved}")
+        return resolved
+    for name in RAW_ROOT_CANDIDATES:
+        candidate = root / name
+        if candidate.is_dir():
+            return candidate
+    raise SourceMissing(f"raw_data root not found: {root / 'raw_data'}")
+
+
 def discover_workspace_root(start: Path | None = None) -> Path:
     candidate = (start or Path(__file__).resolve()).resolve()
     for directory in [candidate, *candidate.parents]:
-        if (directory / "raw_data").is_dir() and (directory / "src").is_dir():
+        if (directory / "src").is_dir() and any(
+            (directory / name).is_dir() for name in RAW_ROOT_CANDIDATES
+        ):
             return directory
     raise SourceMissing(
-        "workspace root not found: expected a directory containing raw_data/ and src/"
+        "workspace root not found: expected a directory containing raw_data/ or data/ and src/"
     )
 
 
-def load_config(workspace_root: Path | None = None) -> EdaConfig:
+def load_config(
+    workspace_root: Path | None = None,
+    raw_root: Path | str | None = None,
+) -> EdaConfig:
     root = (workspace_root or discover_workspace_root()).resolve()
-    raw_root = root / "raw_data"
-    if not raw_root.is_dir():
-        raise SourceMissing(f"raw_data root not found: {raw_root}")
-    output_root = root / "src" / "eda" / "artifacts"
-    assert_not_in_raw(raw_root, output_root)
-    return EdaConfig(workspace_root=root, raw_root=raw_root, output_root=output_root)
+    resolved_raw = _resolve_raw_root(root, raw_root)
+    output_root = root / "artifacts"
+    assert_not_in_raw(resolved_raw, output_root)
+    return EdaConfig(workspace_root=root, raw_root=resolved_raw, output_root=output_root)
 
 
 def config_to_dict(config: EdaConfig) -> dict[str, Any]:

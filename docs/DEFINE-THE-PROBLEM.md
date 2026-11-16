@@ -3,12 +3,12 @@
 ## 1. Tổng quan bài toán
 
 - **Tên bài toán:** Khám phá dữ liệu đa doanh nghiệp (Multi-Business Data Discovery)
-- **Bộ dữ liệu:** Zalo AI Challenge 2026 — DataMate, chỉ sử dụng phân vùng **`public_test`** tại [`data/public_test/`](../data/public_test) (**không sử dụng `train`**)
+- **Bộ dữ liệu:** Zalo AI Challenge 2026 — DataMate, chỉ sử dụng phân vùng **`public_test`** tại [`data/public_test/`](../data/public_test) (hoặc `raw_data/public_test/`, **không sử dụng `train`**)
 - **Lĩnh vực:** Trực quan hóa dữ liệu và Kể chuyện bằng dữ liệu (Data Visualization & Data Storytelling)
 - **Quy mô nhóm & hình thức trình bày:** Đồ án nhóm, trình bày bằng **Jupyter Notebook (`.ipynb`)** và **Slide thuyết trình** bằng **tiếng Việt**
 - **Đối tượng người xem mục tiêu:** Giảng viên môn Trực quan hóa dữ liệu (đánh giá tính trung thực, cách mã hóa thị giác, lựa chọn biểu đồ, độ sạch dữ liệu và mạch kể chuyện)
 
-Dự án khám phá các mẫu hình vận hành, đặc trưng theo loại hình kinh doanh và biến động theo thời gian của **14 doanh nghiệp** vừa và nhỏ tại Việt Nam (`dev_001`–`dev_014`) trong tập [`data/public_test/`](../data/public_test). Tập `train` không nằm trong phạm vi phân tích và trực quan hóa.
+Dự án khám phá các mẫu hình vận hành, đặc trưng theo loại hình kinh doanh và biến động theo thời gian của **14 doanh nghiệp** vừa và nhỏ tại Việt Nam (`dev_001`–`dev_014`) trong tập `public_test` ([`data/public_test/`](../data/public_test) hoặc `raw_data/public_test/`). Tập `train` không nằm trong phạm vi phân tích và trực quan hóa.
 
 Kết quả hướng tới là một **câu chuyện dựa trên dữ liệu (data-driven story)** theo cấu trúc **Bối cảnh → Vấn đề → Bằng chứng → Kết luận / Hành động** (Chương 1, §1.5 [`SUBJECT-CONTENT.md`](SUBJECT-CONTENT.md)): đi từ bức tranh tổng thể 14 doanh nghiệp `public_test`, đến phân tích sâu từng doanh nghiệp tiêu biểu, và đối chiếu các đặc trưng vận hành có thể so sánh giữa các ngành.
 
@@ -16,7 +16,7 @@ Kết quả hướng tới là một **câu chuyện dựa trên dữ liệu (da
 
 ## 2. Bối cảnh và Động lực
 
-Tập [`data/public_test/`](../data/public_test) chứa dữ liệu giao dịch và vận hành có cấu trúc của **14 doanh nghiệp** (`dev_001`–`dev_014`) thuộc nhiều ngành nghề khác nhau (như tạp hóa/tiện lợi, F&B, nhà thuốc, vật liệu xây dựng, sửa xe máy, cửa hàng mẹ và bé, cửa hàng điện thoại…). Các doanh nghiệp này khác nhau đáng kể về:
+Tập `public_test` ([`data/public_test/`](../data/public_test) hoặc `raw_data/public_test/`) chứa dữ liệu giao dịch và vận hành có cấu trúc của **14 doanh nghiệp** (`dev_001`–`dev_014`) thuộc nhiều ngành nghề khác nhau (như tạp hóa/tiện lợi, F&B, nhà thuốc, vật liệu xây dựng, sửa xe máy, cửa hàng mẹ và bé, cửa hàng điện thoại…). Các doanh nghiệp này khác nhau đáng kể về:
 
 - **Hình thức ghi nhận dữ liệu:** từ sổ Excel ghi tay, file xuất từ phần mềm bán hàng/POS đến cơ sở dữ liệu quan hệ CSV hoặc SQLite (`pos.sqlite`), kèm các quy ước riêng như bảng `Ghi tắt` hay danh sách quy đổi đơn vị.
 - **Mức độ chi tiết (granularity):** có doanh nghiệp ghi chi tiết từng dòng hàng kèm mã đơn, có doanh nghiệp chỉ có cấp hóa đơn (`dev_009`) hoặc có tách nhiều tệp theo tháng (`dev_002`, `dev_005`).
@@ -28,7 +28,7 @@ Chỉ đọc bảng số liệu thô khó nhận ra quy luật vận hành. Theo
 - Phát hiện sản phẩm/dịch vụ chủ lực, phân bố hoạt động theo ngày/giờ/ca/cuối tuần hoặc dịp Tết (khi có dữ liệu).
 - Nhận ra điểm chung và điểm đặc thù giữa các loại hình kinh doanh mà không đánh đồng các chỉ số khác bản chất.
 
-Dự án **không** nhằm xếp hạng doanh nghiệp nào "tốt nhất" và **không** suy rộng cho toàn bộ doanh nghiệp Việt Nam; mọi nhận định chỉ giới hạn trong phạm vi 14 doanh nghiệp của `data/public_test/`.
+Dự án **không** nhằm xếp hạng doanh nghiệp nào "tốt nhất" và **không** suy rộng cho toàn bộ doanh nghiệp Việt Nam; mọi nhận định chỉ giới hạn trong phạm vi 14 doanh nghiệp của `public_test`.
 
 ---
 
@@ -44,23 +44,23 @@ Bài toán được tiếp cận theo **3 cấp độ gắn kết thành một c
 
 ---
 
-## 4. Nguồn dữ liệu và Nguyên tắc đọc chỉ đọc (`data/public_test/`)
+## 4. Nguồn dữ liệu và Nguyên tắc đọc chỉ đọc (`data/public_test/` hoặc `raw_data/public_test/`)
 
 ### 4.1 Thành phần dữ liệu sử dụng
 
-Dự án đọc trực tiếp ở chế độ **chỉ đọc (read-only)** từ [`data/public_test/`](../data/public_test):
+Dự án đọc trực tiếp ở chế độ **chỉ đọc (read-only)** từ thư mục dữ liệu gốc của `public_test` (`data/public_test/` hoặc `raw_data/public_test/`, được `load_config()` tự động nhận diện):
 
-- **14 thư mục doanh nghiệp:** [`data/public_test/data/`](../data/public_test/data) gồm `dev_001` đến `dev_014` (`.xlsx`, `.csv`, `.sqlite` và `README.md`).
+- **14 thư mục doanh nghiệp:** [`data/public_test/data/`](../data/public_test/data) (hoặc `raw_data/public_test/data/`) gồm `dev_001` đến `dev_014` (`.xlsx`, `.csv`, `.sqlite` và `README.md`).
 - **Tệp tham chiếu chuẩn:**
-  - [`data/public_test/rulebook.md`](../data/public_test/rulebook.md): chuẩn định nghĩa chỉ số, mốc thời gian, công nợ, nhập hàng và xếp hạng cho toàn bộ dự án.
-  - [`data/public_test/calendar.csv`](../data/public_test/calendar.csv): bảng lịch dương/âm dùng để tra cứu ngày âm lịch và kỳ Tết.
+  - [`data/public_test/rulebook.md`](../data/public_test/rulebook.md) (hoặc `raw_data/public_test/rulebook.md`): chuẩn định nghĩa chỉ số, mốc thời gian, công nợ, nhập hàng và xếp hạng cho toàn bộ dự án.
+  - [`data/public_test/calendar.csv`](../data/public_test/calendar.csv) (hoặc `raw_data/public_test/calendar.csv`): bảng lịch dương/âm dùng để tra cứu ngày âm lịch và kỳ Tết.
 - **Loại trừ nghiêm ngặt dữ liệu `train` và QA:**
   - Phân vùng `train` **không được đọc, gộp hay trực quan hóa**.
-  - Tệp `data/public_test/questions.jsonl` (tồn tại trong thư mục gốc `public_test/`) **tuyệt đối không được đọc hoặc sử dụng** trong bất kỳ bước phân tích hay gợi ý câu hỏi nào.
+  - Tệp `questions.jsonl` (tồn tại trong thư mục gốc `public_test/`) **tuyệt đối không được đọc hoặc sử dụng** trong bất kỳ bước phân tích hay gợi ý câu hỏi nào.
 
 ### 4.2 Nguyên tắc xử lý dữ liệu không đồng nhất
 
-- Giữ nguyên hoàn toàn các tệp gốc trong [`data/public_test/`](../data/public_test), không sửa, ghi đè hay ép gộp mọi doanh nghiệp vào một bảng duy nhất.
+- Giữ nguyên hoàn toàn các tệp gốc trong `data/public_test/` (hoặc `raw_data/public_test/`), không sửa, ghi đè hay ép gộp mọi doanh nghiệp vào một bảng duy nhất.
 - Chỉ tạo các chiều phân tích chung khi định nghĩa chỉ số, đơn vị tính và mức độ chi tiết thực sự tương thích.
 - Các phân tích đặc thù theo ngành (lô thuốc `dev_005`, lượt sửa xe `dev_012`, cửa hàng mẹ và bé `dev_013`, mã ghi tắt `dev_011`/`dev_014`…) giữ ở cấp phân tích từng doanh nghiệp.
 
@@ -111,7 +111,7 @@ Mọi biểu đồ đưa vào `.ipynb` cuối cùng và slide thuyết trình ph
 
 ## 8. Quy tắc Định nghĩa Chỉ số (Theo `rulebook.md`)
 
-Trước khi tính toán bất kỳ chỉ số nào, phải đối chiếu [`data/public_test/rulebook.md`](../data/public_test/rulebook.md) và `README.md` của doanh nghiệp đó:
+Trước khi tính toán bất kỳ chỉ số nào, phải đối chiếu [`data/public_test/rulebook.md`](../data/public_test/rulebook.md) (hoặc `raw_data/public_test/rulebook.md`) và `README.md` của doanh nghiệp đó:
 
 - **Doanh thu & Số đơn:** Chỉ tính đơn **không hủy** và **không trả hàng** (kể cả trả một phần là loại **cả đơn**); đơn đang giao vẫn tính.
 - **Mốc thời gian:** Đơn thuộc kỳ theo **ngày đặt** (không theo ngày giao hay ngày thu tiền); đơn trả hàng sau kỳ vẫn bị loại khỏi doanh thu kỳ đặt.
@@ -125,7 +125,7 @@ Trước khi tính toán bất kỳ chỉ số nào, phải đối chiếu [`dat
 ## 9. Ranh giới phạm vi (Scope Boundaries)
 
 ### Trong phạm vi (In scope)
-- Kiểm kê, phân loại và trực quan hóa bức tranh tổng thể **14 doanh nghiệp** (`dev_001`–`dev_014`) trong [`data/public_test/`](../data/public_test).
+- Kiểm kê, phân loại và trực quan hóa bức tranh tổng thể **14 doanh nghiệp** (`dev_001`–`dev_014`) trong `public_test` (`data/public_test/` hoặc `raw_data/public_test/`).
 - Phân tích mô tả và trực quan hóa từng doanh nghiệp tiêu biểu theo chuẩn `rulebook.md`.
 - Đối chiếu liên doanh nghiệp trên các chiều và khung thời gian tương thích.
 - Trình bày câu chuyện dữ liệu bằng tiếng Việt qua **Jupyter Notebook (`.ipynb`)** và **Slide thuyết trình** dùng `Python`, `pandas`, `NumPy`, `matplotlib`, `seaborn`.

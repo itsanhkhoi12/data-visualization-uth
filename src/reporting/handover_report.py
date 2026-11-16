@@ -273,11 +273,11 @@ def _deliverables_section(run: Any) -> HandoverSection:
         ("reports/story_cards.json", "thẻ chuyện khoa học 9 bước"),
         ("reports/validation_ledger.json", "ledger kiểm tra QA tự động"),
         ("reports/global_report.json", "báo cáo khoa học toàn cục"),
-        ("src/eda/notebook/eda.ipynb", "notebook trình bày 17 phần"),
+        ("notebook/eda.ipynb", "notebook trình bày 17 phần"),
     ]
     for name, description in deliverables:
         target = run.output_root / name
-        if name.startswith("src/"):
+        if name.startswith("notebook/"):
             exists = (
                 run.config.workspace_root / name
             ).exists()
