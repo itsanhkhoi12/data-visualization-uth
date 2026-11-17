@@ -37,7 +37,6 @@ Thư mục [`notebook/`](.) (cùng cấp với gốc dự án) chứa bộ **04 
 | [`02_business_eda.ipynb`](02_business_eda.ipynb) | Giai đoạn 2 | Hồi 2: Bằng chứng vi mô (tập đại diện) | `T2.1`, `T2.2a`, `T2.2b`, `T2.2c`, `T2.3a`, `T2.3b` | `artifacts/guided_eda/phase2_business_eda/` |
 | [`03_cross_business_eda.ipynb`](03_cross_business_eda.ipynb) | Giai đoạn 3 | Hồi 3: Bằng chứng đối chiếu (liên ngành) | `T3.1a`, `T3.1b`, `T3.2a`, `T3.2b`, `T3.2c` | `artifacts/guided_eda/phase3_cross_business/` |
 | [`04_visualization_and_storytelling.ipynb`](04_visualization_and_storytelling.ipynb) | Giai đoạn 4 | Kết luận / Hành động & Cổng QA biểu đồ | `T4.1a`, `T4.1b`, `T4.1c` | `artifacts/guided_eda/phase4_storytelling/` |
-| [`eda.ipynb`](eda.ipynb) | Baseline cũ | Legacy baseline của pipeline tự động | Không thuộc 4 phase Guided EDA | Giữ nguyên, chỉ cập nhật đường dẫn `src/` |
 
 Mỗi notebook trong bộ 4 phase đều tuân theo cấu trúc thống nhất 6 phần:
 
