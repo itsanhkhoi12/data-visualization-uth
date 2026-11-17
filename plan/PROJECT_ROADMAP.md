@@ -6,27 +6,27 @@
 - **Detailed Plan**: §1 Tổng quan dự án; §2 Các cột mốc chính; §3 Các giai đoạn triển khai; §4 Phân rã tác vụ & Phụ thuộc; §5 Rủi ro & Biện pháp giảm thiểu; §6 Theo dõi trạng thái.
 - **References**: [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md), [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md), [`data/public_test/rulebook.md`](../data/public_test/rulebook.md), [`data/public_test/calendar.csv`](../data/public_test/calendar.csv), [`.agents/templates/PROJECT_ROADMAP_TEMPLATE.md`](../.agents/templates/PROJECT_ROADMAP_TEMPLATE.md).
 - **Created**: 2026-11-14T00:36:45+07:00
-- **Last Updated**: 2026-11-16T18:48:45+07:00
+- **Last Updated**: 2026-11-17T10:10:17+07:00
 
 ---
 
 ## Tổng quan nhanh (At a Glance)
 
-**Tiến độ: `0 / 4` giai đoạn hoàn thành** — Chưa có giai đoạn nào hoàn thành; các commit hiện tại trên [`src/eda/`](../src/eda) là phần refactor legacy code baseline. Sẵn sàng bắt đầu từ `T1.0`.
+**Tiến độ: `1 / 4` giai đoạn hoàn thành** — Đã hoàn thành Giai đoạn 1 (`T1.0`–`T1.3b`) qua [`notebook/01_dataset_discovery.ipynb`](../notebook/01_dataset_discovery.ipynb) và xuất bộ bảng kiểm kê + biểu đồ Hồi 1 tại [`artifacts/guided_eda/phase1_dataset_discovery/`](../artifacts/guided_eda/phase1_dataset_discovery). Sẵn sàng bắt đầu Giai đoạn 2 từ `T2.1`.
 
 ```
-░░░░░░░░░░░░░░░░   0/4 (0%)     █ = hoàn thành, ░ = còn lại
+████░░░░░░░░░░░░   1/4 (25%)     █ = hoàn thành, ░ = còn lại
 ```
 
-1. **Giai đoạn 1: Khám phá & Kiểm kê cấp độ bộ dữ liệu** — Chuẩn hóa cấu hình đọc `data/public_test/` hoặc `raw_data/public_test/`, kiểm kê 14 doanh nghiệp (`dev_001`–`dev_014`) & dựng biểu đồ Hồi 1 — `[ ]`
+1. **Giai đoạn 1: Khám phá & Kiểm kê cấp độ bộ dữ liệu** — Chuẩn hóa cấu hình đọc `data/public_test/` hoặc `raw_data/public_test/`, kiểm kê 14 doanh nghiệp (`dev_001`–`dev_014`) & dựng biểu đồ Hồi 1 — `[X]`
 2. **Giai đoạn 2: Chọn tập đại diện & Khám phá từng doanh nghiệp** — Chuẩn bị dữ liệu theo `rulebook.md`, Tidy Data & kiểm tra IQR; khám phá mẫu hình vận hành nội tại (Hồi 2) — `[ ]`
 3. **Giai đoạn 3: Đặc trưng vận hành liên doanh nghiệp** — Đối chiếu các chiều tương thích theo tỉ lệ & khung thời gian chung, biến động dịp Tết (Hồi 3) — `[ ]`
 4. **Giai đoạn 4: Hoàn thiện câu chuyện, `.ipynb` & Slide thuyết trình** — Kiểm định biểu đồ theo chuẩn Cleveland–McGill & 5 hướng dẫn Schwabish, hoàn thiện `.ipynb` và slide tiếng Việt — `[ ]`
 
 > Quy ước trạng thái: `[X]` hoàn thành · `[ ]` chưa bắt đầu · `[~]` đang thực hiện · `[!]` bị chặn  
-> **Lưu ý baseline:** Toàn bộ thay đổi trong [`src/eda/`](../src/eda) tính tới commit `9e70cfb` (`Nam.14112026`, `Cuong15112026`) là **legacy code baseline** đã được dọn về `public_test`, chưa tính là hoàn thành bất kỳ giai đoạn nào của lộ trình kể chuyện 3 hồi.
+> **Lưu ý baseline:** Tiến độ Hồi 1 được ghi nhận hoàn thành dựa trên [`notebook/01_dataset_discovery.ipynb`](../notebook/01_dataset_discovery.ipynb) (PR `#5`).
 
-**Bước tiếp theo:** Thực hiện `T1.0` và `T1.1a` (xác nhận cấu hình đọc `data/public_test/` hoặc `raw_data/public_test/` và trích xuất thông tin từ toàn bộ 14 tệp `README.md`).
+**Bước tiếp theo:** Thực hiện `T2.1` (chọn tập doanh nghiệp đại diện từ `catalog_14.csv`, ưu tiên Tier 1 đa chiều như `dev_001`/`dev_005` ngành F&B, `dev_003`/`dev_008` Bán lẻ Thời trang, `dev_006` Dược phẩm) và triển khai `T2.2a`–`T2.2c` trong [`notebook/02_business_eda.ipynb`](../notebook/02_business_eda.ipynb).
 
 ---
 
@@ -63,7 +63,7 @@
 ### Giai đoạn 1 — Khám phá & Kiểm kê cấp độ bộ dữ liệu (Hồi 1: *Bối cảnh*)
 - **Mục tiêu:** Lập bản đồ toàn cảnh 14 doanh nghiệp trong `data/public_test/` (hoặc `raw_data/public_test/`) để phần Khám phá bộ dữ liệu trở thành Hồi 1 của câu chuyện và làm cơ sở chọn mẫu.
 - **Đầu ra:**
-  - `T1.0` `[ ]`: Cấu hình đọc chỉ đọc `data/public_test/` hoặc `raw_data/public_test/` (14 doanh nghiệp `dev_001`–`dev_014`, `calendar.csv`, `rulebook.md`), bảo đảm chặn đọc `questions.jsonl`.
+  - `T1.0` `[X]`: Cấu hình đọc chỉ đọc `data/public_test/` hoặc `raw_data/public_test/` (14 doanh nghiệp `dev_001`–`dev_014`, `calendar.csv`, `rulebook.md`), bảo đảm chặn đọc `questions.jsonl`.
   - Bảng kiểm kê thống nhất: `business_id`, `industry` suy luận, `recording_format`, `granularity` (đơn+dòng hàng, chỉ đơn, chỉ mặt hàng), số tệp, số dòng, `min_date`–`max_date`, ngày cutoff và khoảng trống dữ liệu.
   - Biểu đồ tổng quan Hồi 1 bằng `matplotlib`/`seaborn` (cơ cấu ngành nghề, mức độ số hóa, dòng thời gian độ phủ dữ liệu, phân bố quy mô dòng).
 
@@ -96,14 +96,14 @@
 
 | Mã | Tác vụ | Trạng thái | Phụ thuộc | Đầu ra |
 |---|---|---|---|---|
-| `T1.0` | Cấu hình đọc chỉ đọc `data/public_test/` hoặc `raw_data/public_test/` (14 doanh nghiệp) | `[ ]` | — | Cấu hình nguồn dữ liệu & kiểm thử |
-| `T1.1a` | Đọc toàn bộ 14 tệp `README.md` (trích xuất hình thức ghi nhận, ngày cutoff, quy ước đơn vị/ghi tắt, mô tả bảng) | `[ ]` | `T1.0` | Bảng tổng hợp metadata từ `README` |
-| `T1.1b` | Quét toàn bộ tệp `.csv`, `.xlsx` (mọi sheet) và `.sqlite` của 14 doanh nghiệp để lấy tên bảng/sheet, cột và số dòng | `[ ]` | `T1.0` | Bảng cấu trúc tệp & số dòng |
-| `T1.1c` | Trích xuất `min_date`, `max_date`, số ngày/tháng có dữ liệu và khoảng trống thời gian của từng doanh nghiệp | `[ ]` | `T1.1b` | Bảng độ phủ & khoảng trống ngày |
-| `T1.2a` | Suy luận và kiểm chứng `industry` (ngành nghề) cho 14 doanh nghiệp từ `README.md` + mẫu tên hàng/giao dịch | `[ ]` | `T1.1a`, `T1.1b` | Nhãn ngành nghề đã kiểm chứng |
-| `T1.2b` | Gắn nhãn mức độ chi tiết & khả năng so sánh (đơn+hàng vs. chỉ đơn vs. chỉ hàng; giờ, mã khách, giá vốn) | `[ ]` | `T1.1b` | Danh mục 14 doanh nghiệp hoàn chỉnh |
-| `T1.3a` | Xây dựng notebook Khám phá Hồi 1 (bảng tổng hợp + biểu đồ nháp về cơ cấu, mức số hóa, quy mô, độ phủ) | `[ ]` | `T1.1c`, `T1.2a`, `T1.2b` | `.ipynb` khám phá Hồi 1 |
-| `T1.3b` | Tinh chỉnh biểu đồ Giải thích Hồi 1 (cơ cấu ngành, mức độ số hóa, dòng thời gian độ phủ 2025–2026) | `[ ]` | `T1.3a` | Bộ biểu đồ Hồi 1 |
+| `T1.0` | Cấu hình đọc chỉ đọc `data/public_test/` hoặc `raw_data/public_test/` (14 doanh nghiệp) | `[X]` | — | Cấu hình nguồn dữ liệu & kiểm thử |
+| `T1.1a` | Đọc toàn bộ 14 tệp `README.md` (trích xuất hình thức ghi nhận, ngày cutoff, quy ước đơn vị/ghi tắt, mô tả bảng) | `[X]` | `T1.0` | Bảng tổng hợp metadata từ `README` |
+| `T1.1b` | Quét toàn bộ tệp `.csv`, `.xlsx` (mọi sheet) và `.sqlite` của 14 doanh nghiệp để lấy tên bảng/sheet, cột và số dòng | `[X]` | `T1.0` | Bảng cấu trúc tệp & số dòng |
+| `T1.1c` | Trích xuất `min_date`, `max_date`, số ngày/tháng có dữ liệu và khoảng trống thời gian của từng doanh nghiệp | `[X]` | `T1.1b` | Bảng độ phủ & khoảng trống ngày |
+| `T1.2a` | Suy luận và kiểm chứng `industry` (ngành nghề) cho 14 doanh nghiệp từ `README.md` + mẫu tên hàng/giao dịch | `[X]` | `T1.1a`, `T1.1b` | Nhãn ngành nghề đã kiểm chứng |
+| `T1.2b` | Gắn nhãn mức độ chi tiết & khả năng so sánh (đơn+hàng vs. chỉ đơn vs. chỉ hàng; giờ, mã khách, giá vốn) | `[X]` | `T1.1b` | Danh mục 14 doanh nghiệp hoàn chỉnh |
+| `T1.3a` | Xây dựng notebook Khám phá Hồi 1 (bảng tổng hợp + biểu đồ nháp về cơ cấu, mức số hóa, quy mô, độ phủ) | `[X]` | `T1.1c`, `T1.2a`, `T1.2b` | `.ipynb` khám phá Hồi 1 |
+| `T1.3b` | Tinh chỉnh biểu đồ Giải thích Hồi 1 (cơ cấu ngành, mức độ số hóa, dòng thời gian độ phủ 2025–2026) | `[X]` | `T1.3a` | Bộ biểu đồ Hồi 1 |
 
 ### Giai đoạn 2 — Chọn tập đại diện & Khám phá từng doanh nghiệp (Hồi 2)
 
@@ -152,5 +152,5 @@
 
 ## 6. Theo dõi trạng thái
 
-- **Trạng thái hiện tại:** `[STATUS: ACTIVE]` — Chưa có giai đoạn nào hoàn thành (`0/4`); đã đồng bộ phạm vi `public_test` (14 doanh nghiệp `dev_001`–`dev_014`) và cấu trúc thư mục `data/` hoặc `raw_data/` với [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md) và [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md).
+- **Trạng thái hiện tại:** `[STATUS: ACTIVE]` — Hoàn thành `1/4` giai đoạn (**Giai đoạn 1 — Hồi 1** qua [`notebook/01_dataset_discovery.ipynb`](../notebook/01_dataset_discovery.ipynb), với 14 doanh nghiệp phân vào 7 ngành nghề, cửa sổ giao thoa chung 314 ngày `2025-07-01`–`2026-05-10`, và bộ đầu ra tại [`artifacts/guided_eda/phase1_dataset_discovery/`](../artifacts/guided_eda/phase1_dataset_discovery)); sẵn sàng chuyển sang **Giai đoạn 2 (`T2.1`–`T2.3b`)**.
 - **Quy tắc cập nhật:** Cập nhật thanh tiến độ, bảng tác vụ và mốc `Last Updated` mỗi khi hoàn thành một cột mốc hoặc tác vụ.
