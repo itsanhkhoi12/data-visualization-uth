@@ -26,7 +26,7 @@
 > Quy ước trạng thái: `[X]` hoàn thành · `[ ]` chưa bắt đầu · `[~]` đang thực hiện · `[!]` bị chặn  
 > **Lưu ý baseline:** Tiến độ Hồi 1 được ghi nhận hoàn thành dựa trên [`notebook/01_dataset_discovery.ipynb`](../notebook/01_dataset_discovery.ipynb) (PR `#5`). Giai đoạn 2–3 bàn giao qua PR `#6` (NB02) và PR `#7` (NB03).
 
-**Bước tiếp theo:** Triển khai `T4.2a`–`T4.2b` (dàn ý & slide thuyết trình tiếng Việt) trong [`notebook/04_visualization_and_storytelling.ipynb`](../notebook/04_visualization_and_storytelling.ipynb), dùng bộ 24 ảnh 300 DPI đã kiểm định tại `figures_300dpi/`.
+**Bước tiếp theo:** Triển khai `T4.2b` (dựng slide thuyết trình tiếng Việt) trong [`notebook/04_visualization_and_storytelling.ipynb`](../notebook/04_visualization_and_storytelling.ipynb), dùng bộ 24 ảnh 300 DPI đã kiểm định tại `figures_300dpi/`. **Kịch bản trình bày đã soạn sẵn** tại [`docs/PRESENTATION_SCRIPT.md`](PRESENTATION_SCRIPT.md) — 14 slide, mỗi slide có thông điệp chủ động, số liệu đã đối chiếu với artifact, công thức + cách tính cho mọi chỉ số suy ra, và gợi ý biểu đồ.
 
 ---
 
@@ -136,7 +136,7 @@
 | `T4.1a` | Kiểm định toàn bộ biểu đồ Hồi 1–3 theo chuẩn Cleveland–McGill & 5 hướng dẫn Schwabish | `[X]` | `T1.3b`, `T2.3b`, `T3.2c` | Danh sách kiểm định biểu đồ → `tables/chart_audit_checklist.csv` + `tables/chart_audit_summary.csv` (33 biểu đồ; **24 ứng viên xuất bản ĐẠT 10/10 tiêu chí, 0 ô `CẦN KIỂM TRA`**; 9 bản nháp trong `figures/drafts/` bị loại có chủ đích). Mỗi biểu đồ được ánh xạ tự động về đúng ô `savefig` vẽ nó để chấm bằng bằng chứng kiểm tra được |
 | `T4.1b` | Xuất bộ ảnh tĩnh cho slide (`sns.set_context("talk")`, `dpi=300`, `bbox_inches="tight"`) | `[X]` | `T4.1a` | Bộ ảnh PNG độ phân giải cao → `figures_300dpi/` (**24 ảnh 300 DPI thật**, kiểm tra hậu kỳ: chữ ký PNG, DPI=300, chiều rộng ≥ 2.000 px, biên an toàn ≥ 4 px) |
 | `T4.1c` | Hoàn thiện bộ Jupyter Notebook (`.ipynb`) tiếng Việt (mạch văn rõ ràng, chạy tái lập từ đầu đến cuối) | `[X]` | `T4.1a` | Bộ `.ipynb` hoàn chỉnh → `tables/storytelling_final_checklist.csv` (**`C9` `ĐẠT` — tái lập toàn tuyến 0 lỗi; `C10` `ĐẠT` — 24/24 ứng viên đạt 10/10 tiêu chí**, tự suy ra từ bảng kiểm định chứ không nhập tay) |
-| `T4.2a` | Lập dàn ý slide thuyết trình tiếng Việt (*Bối cảnh → Vấn đề → Bằng chứng → Kết luận / Hành động*) | `[ ]` | `T4.1a` | Khung nội dung slide |
+| `T4.2a` | Lập dàn ý slide thuyết trình tiếng Việt (*Bối cảnh → Vấn đề → Bằng chứng → Kết luận / Hạn chế & Hướng phát triển*) | `[X]` | `T4.1a` | Khung nội dung slide → [`docs/PRESENTATION_SCRIPT.md`](PRESENTATION_SCRIPT.md) — 14 slide theo 4 hồi, mỗi slide có thông điệp chủ động + số liệu đối chiếu artifact + **công thức & cách tính** cho mọi chỉ số suy ra + gợi ý biểu đồ; Slide 13–14 chỉ nêu kết luận / hạn chế / hướng phát triển dự kiến |
 | `T4.2b` | Hoàn thiện slide thuyết trình, chèn ảnh `dpi=300`, bổ sung ghi chú thuyết trình & chú thích giới hạn | `[ ]` | `T4.1b`, `T4.2a` | Slide thuyết trình hoàn chỉnh |
 
 ---
