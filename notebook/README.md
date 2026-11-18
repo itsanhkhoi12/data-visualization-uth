@@ -4,9 +4,9 @@
 - **Purpose**: Tài liệu hóa đầy đủ kiến trúc, mục tiêu, phân rã tác vụ, cấu trúc thư mục `mkdir` đầu ra cho từng phase, mô-đun tái sử dụng và hợp đồng đầu vào giữa 4 giai đoạn (4 phases) tương ứng với 4 Jupyter Notebook trong [`notebook/`](.).
 - **Overview Pipeline**: Giai đoạn 1 ([`01_dataset_discovery.ipynb`](01_dataset_discovery.ipynb)) lập danh mục 14 doanh nghiệp & Hồi 1 → Giai đoạn 2 ([`02_business_eda.ipynb`](02_business_eda.ipynb)) chọn tập đại diện, làm sạch chuẩn `rulebook.md`/Tidy Data & Hồi 2 → Giai đoạn 3 ([`03_cross_business_eda.ipynb`](03_cross_business_eda.ipynb)) đối chiếu liên doanh nghiệp tương thích & Hồi 3 → Giai đoạn 4 ([`04_visualization_and_storytelling.ipynb`](04_visualization_and_storytelling.ipynb)) kiểm định biểu đồ, xuất ảnh `dpi=300` và hoàn thiện câu chuyện tiếng Việt.
 - **Detailed Plan**: §1 Tổng quan 4 Giai đoạn & Cấu trúc Thư mục Notebook; §2 Cây Thư mục Đầu ra (`mkdir`) Theo Từng Giai đoạn; §3 Nguyên tắc Chung & Phạm vi Dữ liệu; §4 Chi tiết Từng Giai đoạn (Phases 1–4); §5 Cơ chế Phụ thuộc & Hợp đồng Đầu vào (Input Contract); §6 Hướng dẫn Chạy & Kiểm chứng Tái lập.
-- **References**: [`plan/PROJECT_ROADMAP.md`](../plan/PROJECT_ROADMAP.md), [`plan/EDA_NOTEBOOK_PROMPT_NO_SLIDES.md`](../plan/EDA_NOTEBOOK_PROMPT_NO_SLIDES.md), [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md), [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md), [`data/public_test/rulebook.md`](../data/public_test/rulebook.md), [`data/public_test/calendar.csv`](../data/public_test/calendar.csv), [`.agents/rules/MD_CONVENTION.md`](../.agents/rules/MD_CONVENTION.md).
+- **References**: [`plan/PROJECT_ROADMAP.md`](../plan/PROJECT_ROADMAP.md), [`plan/EDA_NOTEBOOK_PROMPT_NO_SLIDES.md`](../plan/EDA_NOTEBOOK_PROMPT_NO_SLIDES.md), [`docs/DEFINE-THE-PROBLEM.md`](../docs/DEFINE-THE-PROBLEM.md), [`docs/SUBJECT-CONTENT.md`](../docs/SUBJECT-CONTENT.md), [`docs/PRESENTATION_SCRIPT.md`](../docs/PRESENTATION_SCRIPT.md), [`data/public_test/rulebook.md`](../data/public_test/rulebook.md), [`data/public_test/calendar.csv`](../data/public_test/calendar.csv), [`.agents/rules/MD_CONVENTION.md`](../.agents/rules/MD_CONVENTION.md).
 - **Created**: 2026-11-16T21:26:24+07:00
-- **Last Updated**: 2026-11-16T21:49:00+07:00
+- **Last Updated**: 2026-11-18T01:40:00+07:00
 
 [STATUS: ACTIVE]
 
@@ -37,7 +37,6 @@ Thư mục [`notebook/`](.) (cùng cấp với gốc dự án) chứa bộ **04 
 | [`02_business_eda.ipynb`](02_business_eda.ipynb) | Giai đoạn 2 | Hồi 2: Bằng chứng vi mô (tập đại diện) | `T2.1`, `T2.2a`, `T2.2b`, `T2.2c`, `T2.3a`, `T2.3b` | `artifacts/guided_eda/phase2_business_eda/` |
 | [`03_cross_business_eda.ipynb`](03_cross_business_eda.ipynb) | Giai đoạn 3 | Hồi 3: Bằng chứng đối chiếu (liên ngành) | `T3.1a`, `T3.1b`, `T3.2a`, `T3.2b`, `T3.2c` | `artifacts/guided_eda/phase3_cross_business/` |
 | [`04_visualization_and_storytelling.ipynb`](04_visualization_and_storytelling.ipynb) | Giai đoạn 4 | Kết luận / Hành động & Cổng QA biểu đồ | `T4.1a`, `T4.1b`, `T4.1c` | `artifacts/guided_eda/phase4_storytelling/` |
-| [`eda.ipynb`](eda.ipynb) | Baseline cũ | Legacy baseline của pipeline tự động | Không thuộc 4 phase Guided EDA | Giữ nguyên, chỉ cập nhật đường dẫn `src/` |
 
 Mỗi notebook trong bộ 4 phase đều tuân theo cấu trúc thống nhất 6 phần:
 
